@@ -100,6 +100,7 @@ class _HomeTabView(ctk.CTkFrame):
         self.table=_TableTab(table_tab)
         self.table.pack(fill="both", expand=True)
         self.process_data=log_parser()
+        self.select_phase=self.process_data.select_phases
     def _side_bar_view(self,master):
 
         
@@ -127,8 +128,8 @@ class _HomeTabView(ctk.CTkFrame):
         self.btn_output_path.grid(column=2,row=7,padx=2,sticky="esn")
         ctk.CTkLabel(self.sideBarFrame, text="Mode", font=CONTENT_FONT,fg_color=BG_COLOR,).grid(row=8,column=0,columnspan=3,sticky="w",pady=10)
         
-        ctk.CTkCheckBox(self.sideBarFrame,text="Loop",font=LABLE_FONT,corner_radius=5,variable=self.check_dut_compare,command=lambda:self.check_logic_mode(1)).grid(row=9,column=0,sticky="w")
-        ctk.CTkCheckBox(self.sideBarFrame,text="Correl",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=10,column=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="DUT Compare",font=LABLE_FONT,corner_radius=5,variable=self.check_dut_compare,command=lambda:self.check_logic_mode(1)).grid(row=9,column=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="Correlation",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=10,column=0,sticky="w")
         ctk.CTkCheckBox(self.sideBarFrame,text="GRR",font=LABLE_FONT,corner_radius=5,variable=self.check_grr,command=lambda:self.check_logic_mode(3)).grid(row=11,column=0,sticky="w")
 
         self.btn_run=ctk.CTkButton(self.sideBarFrame,text="Run",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.update_sheet())
@@ -145,16 +146,23 @@ class _HomeTabView(ctk.CTkFrame):
 
         self.masterchef_frame=ctk.CTkFrame(self.sideBarFrame,fg_color=BG_COLOR)
         self.masterchef_frame.grid_forget()
-        self.btn_chef=ctk.CTkButton(self.masterchef_frame,text="Chef",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.chef())
+        self.btn_chef=ctk.CTkButton(self.masterchef_frame,text="Nấu Ăn",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.chef())
         self.btn_chef.grid(row=0,column=0)
     def refresh(self):
         pass
     def export_csv(self):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
-        df_xp=self.df_data.T
-        df_xp.to_csv(path,index=True)    
+        df_export=self.df_data.T
+        df_export.to_csv(path,index=True)  
+        messagebox.showinfo(title="Notice",message=f"Export csv file completed")
+
     def chef(self):
-        pass
+        summary_file=filedialog.askopenfilename(title="Select csv summary file",filetypes=[("CSV files", "*.csv")])
+        output_folder=filedialog.askdirectory(title="Select output log folder",initialdir="/")
+        self.process_data.update_log_files(summary_file,output_folder)
+        messagebox.showwarning(title="Warning",message="Đã nấu xong món")
+        
+        
 
 
     def update_sheet(self):
@@ -163,13 +171,14 @@ class _HomeTabView(ctk.CTkFrame):
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":
             if Path(path).is_dir():
-                self.df_limit,self.df_data=self.process_data.summary_data(path,mode="full")
+                self.df_limit,self.df_data=self.process_data.summary_data(path,mode="sort")
                 
                 self.table.make_table(self.df_data)
             if Path(path).is_file():
-                self.df_data=pd.read_csv(path)
+                self.df_data=pd.read_csv(path,index_col=0)
                 
-                self.table.make_table(self.df_data)
+                
+                self.table.make_table(self.df_data.T)
                 
         
 
@@ -340,6 +349,7 @@ class _TableTab(ctk.CTkFrame):
         self.df_data=dataFrame
         self.df_data=self.df_data.astype("str")
         data_sheet=self.df_data.values.tolist()
+        self.sheet.headers(self.df_data.columns.tolist())
         self.sheet.set_sheet_data(data_sheet)
         self.sheet.refresh()
 

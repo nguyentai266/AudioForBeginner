@@ -122,6 +122,14 @@ class log_parser(object):
 	            # ghi dataframe (header + data)
 				df_file.to_csv(f, index=False)
 				print(f"Updated: {outfile}")
+	def process_df(self,summary_df):
+		df=summary_df.copy()
+		df["phase"] = df["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
+		df["freq"] = df["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
+		df.set_index(columns='phase')
+		df.drop(columns="measurement")
+		return df
+	
 
 
 if __name__=="__main__":
@@ -139,7 +147,13 @@ if __name__=="__main__":
 	df_summary_transpose=df_summary.T
 	df_limit.to_csv("limit.csv",index=False	)
 	df_summary_transpose.to_csv("summary.csv",index=True)'''
-	parser.update_log_files("summary.csv","log")
+	#parser.update_log_files("summary.csv","log")
+	path="C:/Users/nguye/Desktop/AudioForBeginner/summary.csv"
+	data=pd.read_csv(path,header=1)
+
+	df=parser.process_df(data.T)
+	df.to_csv("test.csv",index=True)
+	
 
 
 	
