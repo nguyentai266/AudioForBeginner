@@ -6,6 +6,7 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
+from pandas._libs import index
 
 
 class log_parser(object):
@@ -89,21 +90,21 @@ class log_parser(object):
 			df_summary = pd.read_csv(summary_path,index_col=0)
 			print(df_summary)
 			os.makedirs(output_path,exist_ok=True)
-			print("ok")
+			
 		except Exception as e:
 			print(e)
-			print("ok")
+			
 		
 		
 		target_columns = [col for col in df_summary.columns if col.isdigit()]
 		for col in target_columns:
 			try:
-				print("OK")
+				
 				file_path = df_summary.loc['log_path', col]
 			except KeyError: continue
 
 			if not os.path.exists(file_path): 
-				print("ko tim ra")
+				
 				continue
 
 			with open(file_path, 'r', encoding='utf-8') as f:
@@ -122,13 +123,27 @@ class log_parser(object):
 	            # ghi dataframe (header + data)
 				df_file.to_csv(f, index=False)
 				print(f"Updated: {outfile}")
-	def process_df(self,summary_df):
+	def df_phase_freq(self,summary_df,select_phase=[]):
 		df=summary_df.copy()
-		df["phase"] = df["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
-		df["freq"] = df["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
-		df.set_index(columns='phase')
-		df.drop(columns="measurement")
-		return df
+		if "measurement" in df.columns:
+			idx = df.columns.get_loc("measurement")
+			phase_data = df["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
+			freq_data = df["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
+			df.insert(idx + 1,"phase",phase_data)
+			df.insert(idx + 2,"freq",freq_data)
+			df["phase"] = df["phase"].fillna(df["measurement"])
+			
+		df_copy=df.drop(columns=["measurement"]).copy()
+		if select_phase=="": return df_copy
+		elif select_phase:
+
+			df_copy["phase"] = df_copy["phase"].str.strip()
+			sort_df=df_copy[df_copy["phase"].isin(select_phase)].copy()
+			return sort_df
+		else:
+			return
+			
+	
 	
 
 
@@ -148,11 +163,15 @@ if __name__=="__main__":
 	df_limit.to_csv("limit.csv",index=False	)
 	df_summary_transpose.to_csv("summary.csv",index=True)'''
 	#parser.update_log_files("summary.csv","log")
-	path="C:/Users/nguye/Desktop/AudioForBeginner/summary.csv"
-	data=pd.read_csv(path,header=1)
+	path="summary.csv"
+	data=pd.read_csv(path)
+	print(data.columns)
+	
 
-	df=parser.process_df(data.T)
-	df.to_csv("test.csv",index=True)
+
+	df=parser.df_phase_freq(data,select_phase=['dut_id',"spk-1_rb"])
+	print(df)
+	df.to_csv("test.csv",index=False)
 	
 
 

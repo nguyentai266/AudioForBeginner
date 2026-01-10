@@ -307,7 +307,7 @@ class _GraphTab(ctk.CTkFrame):
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
 
-        freq = np.logspace(2, 4, 100)
+        freq = np.logspace(np.log10(100),10,np.log10(1000),100, np.log10(10000),1000)
         y = 5 / (freq / 100) + np.random.uniform(0.05, 0.2)
 
         ax.plot(freq, y, label=f"DUT {index}")
