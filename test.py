@@ -1,98 +1,98 @@
-import tkinter as tk
 
-import customtkinter as ctk
+
+import re
+
+import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
-ctk.set_appearance_mode("dark")
+import pandas as pd
 
 
-class MultiPlotVerticalScroll(ctk.CTk):
+def plot_fr(csv_path, title="dut_comp"):
+    df = pd.read_csv(csv_path, header=None)
 
-    def __init__(self):
-        super().__init__()
-        self.geometry("900x700")
-        self.title("Vertical Scroll - Multiple Plots")
+    # Lấy dòng bắt đầu bằng mic-1_fr
+    fr_rows = df[df[0].str.contains("mic-1_fr", na=False)]
 
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+    # Tách tần số từ tên dòng
+    freqs = fr_rows[0].str.extract(r"mic-1_fr_(\d+\.\d+)")[0].astype(float)
 
-        # ===== container =====
-        container = ctk.CTkFrame(self)
-        container.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+    # Lấy dữ liệu đo (20 cột)
+    data = fr_rows.iloc[:, 1:21].astype(float)
 
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+    # Trung bình các DUT
+    mean = data.mean(axis=1)
 
-        # ===== canvas =====
-        self.canvas = tk.Canvas(
-            container,
-            bg="#242424",
-            highlightthickness=1
-        )
-        self.canvas.grid(row=0, column=0, sticky="nsew")
+    # Tạo limit giả (để giống hình)
+    upper = mean + 3
+    lower = mean - 3
 
-        # ===== scrollbar dọc =====
-        v_scroll = ctk.CTkScrollbar(
-            container,
-            orientation="vertical",
-            command=self.canvas.yview
-        )
-        v_scroll.grid(row=0, column=1, sticky="ns")
+    # Vẽ
+    fig = plt.figure(figsize=(10, 4))
+    ax = fig.add_subplot(111)
 
-        self.canvas.configure(yscrollcommand=v_scroll.set)
+    for i in range(data.shape[1]):
+        ax.plot(freqs, data.iloc[:, i], linewidth=1)
 
-        # ===== inner frame =====
-        self.inner = ctk.CTkFrame(self.canvas)
-        self.window_id = self.canvas.create_window(
-            (0, 0),
-            window=self.inner,
-            anchor="nw"
-        )
+    # Vẽ limit
+    ax.plot(freqs, upper, color="red", linewidth=2)
+    ax.plot(freqs, lower, color="red", linewidth=2, label="limits")
 
-        self.inner.bind("<Configure>", self._update_scrollregion)
-        self.canvas.bind("<Configure>", self._resize_inner)
+    # Trục log
+    ax.set_xscale("log")
+    ax.set_xlim(100, 22400)
 
-        # ===== tạo nhiều biểu đồ =====
-        for i in range(8):
-            self.add_plot(i + 1)
+    # Tick đẹp
+    ax.set_xticks(
+        np.logspace(start=2,stop=4,num=10),
+        ["",r"$10^2$", r"$10^3$", r"$10^4$"]
+    )
 
-    # ---------------------------
-    def add_plot(self, index):
-        frame = ctk.CTkFrame(self.inner, height=800)
-        frame.pack(fill="x", padx=20, pady=15)
-        frame.pack_propagate(False)
+    ax.set_xlabel("freq[Hz]")
+    ax.set_ylabel("Amplitude (dB)")
+    ax.set_title(title)
 
-        fig = Figure(figsize=(7, 2.6), dpi=100)
-        fig.patch.set_facecolor("#e6e6e6")
-        ax = fig.add_subplot(111)
+    ax.grid(True, which="both", alpha=0.5)
+    ax.legend()
 
-        freq = np.logspace(2, 4, 100)
-        y = 5 / (freq / 100) + np.random.uniform(0.05, 0.2)
-
-        ax.plot(freq, y, label=f"DUT {index}")
-        ax.axhline(1.0, color="red", linewidth=2, label="limit")
-
-        ax.set_xscale("log")
-        ax.set_title(f"Frequency Response - DUT {index}")
-        ax.set_xlabel("Frequency (Hz)")
-        ax.set_ylabel("Level (dB)")
-        ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-        ax.legend()
-
-        canvas = FigureCanvasTkAgg(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
-
-    # ---------------------------
-    def _update_scrollregion(self, event):
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-
-    def _resize_inner(self, event):
-        self.canvas.itemconfig(self.window_id, width=event.width)
+    plt.tight_layout()
+    plt.show()
 
 
-if __name__ == "__main__":
-    app = MultiPlotVerticalScroll()
-    app.mainloop()
+
+# 1. Đọc file
+df = pd.read_csv("sum.csv")
+
+# 2. Lọc các cột FR mic
+fr_cols = [c for c in df.columns if c.startswith("mic-1_fr")]
+
+# 3. Chuyển wide -> long
+df_long = df.melt(
+    id_vars=["log_id"],
+    value_vars=fr_cols,
+    var_name="measurement",
+    value_name="value"
+)
+
+# 4. Tách tần số
+df_long["freq"] = df_long["measurement"].str.extract(r"_(\d+\.\d+)$").astype(float)
+
+# 5. Vẽ
+plt.figure(figsize=(10, 4))
+
+for uid, g in df_long.groupby("log_id"):
+    plt.plot(g["freq"], g["value"], linewidth=1)
+
+plt.xscale("log")
+plt.xlim(100, 22400)
+
+plt.xticks(
+    [100, 1000, 10000],
+    [r"$10^2$", r"$10^3$", r"$10^4$"]
+)
+
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Amplitude (dB)")
+plt.title("Mic FR Comparison")
+plt.grid(True, which="both", alpha=0.5)
+
+plt.show()

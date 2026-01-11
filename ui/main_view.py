@@ -1,8 +1,12 @@
+import os
+import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from CTkTable import *
@@ -10,12 +14,16 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tksheet import Sheet
 
-from core.csv_parser import log_parser
+from core.parser_log import log_parser
+from core.plotter import AudioMakeGraph
 
 TITLE_FONT=("Calibri",22,'bold')
 CONTENT_FONT=("Calibri",18,'bold')
 LABLE_FONT=("Calibri",14,'bold')
 BG_COLOR="#00A2E8"
+
+process_data=log_parser()
+plotter=AudioMakeGraph()
 class MainView(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
@@ -94,13 +102,14 @@ class _HomeTabView(ctk.CTkFrame):
         tabview._segmented_button.configure(font=CONTENT_FONT)
         graph_tab = tabview.add("Graph")
         table_tab = tabview.add("Table")
+        
 
         self.graph=_GraphTab(graph_tab)
         self.graph.pack(fill="both", expand=True)
         self.table=_TableTab(table_tab)
         self.table.pack(fill="both", expand=True)
-        self.process_data=log_parser()
-        self.select_phase=self.process_data.select_phases
+        
+        
     def _side_bar_view(self,master):
 
         
@@ -132,7 +141,7 @@ class _HomeTabView(ctk.CTkFrame):
         ctk.CTkCheckBox(self.sideBarFrame,text="Correlation",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=10,column=0,sticky="w")
         ctk.CTkCheckBox(self.sideBarFrame,text="GRR",font=LABLE_FONT,corner_radius=5,variable=self.check_grr,command=lambda:self.check_logic_mode(3)).grid(row=11,column=0,sticky="w")
 
-        self.btn_run=ctk.CTkButton(self.sideBarFrame,text="Run",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.update_sheet())
+        self.btn_run=ctk.CTkButton(self.sideBarFrame,text="Run",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.run_analyze())
         self.btn_run.grid(row=12,column=0,columnspan=3,sticky="",pady=10)
 
         self.btn_refresh=ctk.CTkButton(self.sideBarFrame,text="Refresh",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.refresh())
@@ -152,33 +161,43 @@ class _HomeTabView(ctk.CTkFrame):
         pass
     def export_csv(self):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
-        df_export=self.df_data.T
-        df_export.to_csv(path,index=True)  
+        df_export=self.df_data
+        df_export.to_csv(path,index=False)  
         messagebox.showinfo(title="Notice",message=f"Export csv file completed")
 
     def chef(self):
         summary_file=filedialog.askopenfilename(title="Select csv summary file",filetypes=[("CSV files", "*.csv")])
         output_folder=filedialog.askdirectory(title="Select output log folder",initialdir="/")
-        self.process_data.update_log_files(summary_file,output_folder)
+        process_data.update_log_files_by_row(summary_file,output_folder)
         messagebox.showwarning(title="Warning",message="Đã nấu xong món")
         
         
 
 
-    def update_sheet(self):
+    def run_analyze(self):
         path=self.entry_input.get()
         if path == "":
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":
             if Path(path).is_dir():
-                self.df_limit,self.df_data=self.process_data.summary_data(path,mode="sort")
+                self.df_limit,self.df_data=process_data.summary_data(path,mode="sort")
+                self.df_limit.to_csv("limit.csv",index=False)
                 
+                self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
                 self.table.make_table(self.df_data)
+                
             if Path(path).is_file():
-                self.df_data=pd.read_csv(path,index_col=0)
-                
-                
-                self.table.make_table(self.df_data.T)
+                if not os.path.exists("limit.csv"):
+                    
+                    messagebox.showerror(title="Warning",message="Không tìm thấy file limit, vui lòng chuyển sang folder và chạy một log bất kì để tạo file limit")
+                    return
+                else:
+                    self.df_limit=pd.read_csv("limit.csv")
+                    self.df_data=pd.read_csv(path,index_col=0)
+                    self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
+                    self.table.make_table(self.df_data)
+                    
+                    
                 
         
 
@@ -261,6 +280,8 @@ class _ToolTabView(ctk.CTkFrame):
 class _GraphTab(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
+        
+
         container=ctk.CTkFrame(self)
         container.pack(fill="both",expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -281,7 +302,7 @@ class _GraphTab(ctk.CTkFrame):
         v_scroll.grid(row=0, column=1, sticky="ns")
 
         self.canvas.configure(yscrollcommand=v_scroll.set)
-
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
         # ===== inner frame =====
         self.inner = ctk.CTkFrame(self.canvas)
         self.window_id = self.canvas.create_window(
@@ -292,45 +313,56 @@ class _GraphTab(ctk.CTkFrame):
 
         self.inner.bind("<Configure>", self._update_scrollregion)
         self.canvas.bind("<Configure>", self._resize_inner)
+        self.show_img()
 
+    def show_img(self):
+        fig, ax = plt.subplots()
+        img = mpimg.imread("image.png")
+        ax.imshow(img)
+        ax.axis("off")
+        self.pack_grarh(fig=fig)
         # ===== tạo nhiều biểu đồ =====
-        for i in range(8):
-            self.add_plot(i + 1)
+        #for i in range(8):
+            #self.add_plot(i + 1)
+    def show_graph(self,limit_df,data_df):
+        self.clear_inner() 
+        phases=limit_df["phase"].unique()
+        
+        df_t = data_df.T.reset_index()
+        df_t = df_t.rename(columns={"index": "measurement"})
 
+        df_sort=process_data.df_phase_freq(df_t) 
+        df_sort.to_csv('dsdsds.csv',index=False)
+        
+        for phase in phases:
+            
+            fig=plotter.maker_graph(limit_df=limit_df,data_df=df_sort,phase=phase)
+            self.pack_grarh(fig)
     # ---------------------------
-    def add_plot(self, index):
+    def pack_grarh(self,fig):
+        
         frame = ctk.CTkFrame(self.inner, height=800)
         frame.pack(fill="both", padx=20, pady=15)
         frame.pack_propagate(False)
-
-        fig = Figure(figsize=(7, 2.6), dpi=100)
-        fig.patch.set_facecolor("#e6e6e6")
-        ax = fig.add_subplot(111)
-
-        freq = np.logspace(np.log10(100),10,np.log10(1000),100, np.log10(10000),1000)
-        y = 5 / (freq / 100) + np.random.uniform(0.05, 0.2)
-
-        ax.plot(freq, y, label=f"DUT {index}")
-        ax.axhline(1.0, color="red", linewidth=2, label="limit")
-
-        ax.set_xscale("log")
-        ax.set_title(f"Frequency Response - DUT {index}")
-        ax.set_xlabel("Frequency (Hz)")
-        ax.set_ylabel("Level (dB)")
-        ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-        ax.legend()
-
         canvas = FigureCanvasTkAgg(fig, master=frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
-
+    def clear_inner(self):
+        for widget in self.inner.winfo_children():
+            widget.destroy()
     # ---------------------------
     def _update_scrollregion(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def _resize_inner(self, event):
         self.canvas.itemconfig(self.window_id, width=event.width)
-        
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+
+
+    
 
         
 class _TableTab(ctk.CTkFrame):

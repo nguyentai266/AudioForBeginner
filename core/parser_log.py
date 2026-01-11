@@ -18,9 +18,15 @@ class log_parser(object):
 	def load_limit(self,filepath):
 		col_use=["phase","measurement","low_limit","high_limit"]
 		df=pd.read_csv(filepath,header=1,usecols=col_use)
-		final_df=df[df["phase"].isin(self.select_phases)].copy()
-		final_df['frequency'] = final_df['measurement'].str.extract(r'(\d+\.?\d*)$').astype(float) # lay ra tan so
-		return final_df
+		sorted_df=df[df["phase"].isin(self.select_phases)].copy()
+		df_copy=sorted_df.drop(columns="phase").copy()
+		idx = df_copy.columns.get_loc("measurement")
+		phase = df_copy["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
+		freq= df_copy['measurement'].str.extract(r'(\d+\.?\d*)$').astype(float) # lay ra tan so
+		df_copy.insert(idx+1,'phase',phase)
+		df_copy.insert(idx+2,"freq",freq)
+		final=df_copy.drop(columns="measurement")
+		return final
 
 	def __load_data(self,filepath,mode):
 		col_use=["phase","measurement","value"]
@@ -40,7 +46,7 @@ class log_parser(object):
 			info_df=pd.DataFrame({
 				
 				"measurement":["dut_id","result","station_id","log_id","log_path"],
-				"value":[dut_id,result,station_id,log_id,filepath]
+				"value":[dut_id,result,station_id,(dut_id+"_"+log_id),filepath]
 				})
 			df=pd.read_csv(filepath,header=1,usecols=col_use)
 			if mode == "" or mode == "sort":
@@ -85,10 +91,9 @@ class log_parser(object):
 		for file in list_file:
 			shutil.copy(file,path_dir)
 			
-	def update_log_files(self,summary_path,output_path):
+	def update_log_files_by_col(self,summary_path,output_path):
 		try:
 			df_summary = pd.read_csv(summary_path,index_col=0)
-			print(df_summary)
 			os.makedirs(output_path,exist_ok=True)
 			
 		except Exception as e:
@@ -123,25 +128,63 @@ class log_parser(object):
 	            # ghi dataframe (header + data)
 				df_file.to_csv(f, index=False)
 				print(f"Updated: {outfile}")
-	def df_phase_freq(self,summary_df,select_phase=[]):
-		df=summary_df.copy()
-		if "measurement" in df.columns:
-			idx = df.columns.get_loc("measurement")
-			phase_data = df["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
-			freq_data = df["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
-			df.insert(idx + 1,"phase",phase_data)
-			df.insert(idx + 2,"freq",freq_data)
-			df["phase"] = df["phase"].fillna(df["measurement"])
-			
-		df_copy=df.drop(columns=["measurement"]).copy()
-		if select_phase=="": return df_copy
-		elif select_phase:
 
-			df_copy["phase"] = df_copy["phase"].str.strip()
-			sort_df=df_copy[df_copy["phase"].isin(select_phase)].copy()
-			return sort_df
-		else:
-			return
+	def update_log_files_by_row(self, summary_path, output_path):
+		try:
+			df_summary = pd.read_csv(summary_path)
+			os.makedirs(output_path, exist_ok=True)
+		except Exception as e:
+			print(f"Error: {e}")
+
+		for _, row in df_summary.iterrows():
+
+			file_path = row["log_path"]
+
+			if not os.path.exists(file_path):
+				print(f"Missing: {file_path}")
+				continue
+
+			# Đọc dòng info đầu
+			with open(file_path, "r", encoding="utf-8") as f:
+				info_file = f.readline().rstrip("\n")
+
+			# Đọc nội dung log
+			df_file = pd.read_csv(file_path, header=1)
+
+			# Tạo map: measurement -> value
+			value_map = row.to_dict()
+
+			# Update theo measurement
+			df_file["value"] = (
+				df_file["measurement"]
+				.map(value_map)
+				.fillna(df_file["value"])
+			)
+
+			# Ghi file mới
+			outfile = os.path.join(output_path, os.path.basename(file_path))
+
+			with open(outfile, "w", encoding="utf-8", newline="") as f:
+				f.write(info_file + "\n")
+				df_file.to_csv(f, index=False)
+
+			print(f"Updated: {outfile}")
+			
+	def df_phase_freq(self,dataframe):
+		if "measurement" in dataframe.columns:
+			idx = dataframe.columns.get_loc("measurement")
+			phase_data = dataframe["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
+			freq_data = dataframe["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
+			dataframe.insert(idx + 1,"phase",phase_data)
+			dataframe.insert(idx + 2,"freq",freq_data)
+			dataframe["phase"] = dataframe["phase"].fillna(dataframe["measurement"])
+			
+		df_copy=dataframe.drop(columns=["measurement"]).copy()
+		df_copy.to_csv("sdfasdf.csv",index=True)
+		return df_copy
+
+			
+		
 			
 	
 	
@@ -169,7 +212,7 @@ if __name__=="__main__":
 	
 
 
-	df=parser.df_phase_freq(data,select_phase=['dut_id',"spk-1_rb"])
+	df=parser.df_phase_freq(data,select_phase=['dut_id','station_id',"spk-1_rb"])
 	print(df)
 	df.to_csv("test.csv",index=False)
 	
