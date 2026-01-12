@@ -332,7 +332,7 @@ class _GraphTab(ctk.CTkFrame):
         df_t = df_t.rename(columns={"index": "measurement"})
 
         df_sort=process_data.df_phase_freq(df_t) 
-        df_sort.to_csv('dsdsds.csv',index=False)
+        #df_sort.to_csv('dsdsds.csv',index=False)
         
         for phase in phases:
             

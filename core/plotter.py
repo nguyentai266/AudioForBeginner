@@ -19,12 +19,16 @@ class AudioMakeGraph(object):
         low_df=limit_df_by_phase[["freq","low_limit"]]
         self.high_df=high_df.dropna(subset=["high_limit"])
         self.low_df=low_df.dropna(subset=["low_limit"])
-        fig=self.__plotter()
+        
 
         df_graph=data_df[data_df["phase"]==phase].copy()
-        df_graph.to_csv(f"phase/{phase}.csv")
+        #df_graph.to_csv(f"phase/{phase}.csv")
         self.freq=df_graph["freq"]
         
+        values = df_graph.iloc[:, 2:]
+        
+        values.to_csv(f"phase/{phase}.csv")
+        fig=self.__plotter(values)
         
 
         return fig
@@ -33,15 +37,21 @@ class AudioMakeGraph(object):
 
 
             
-    def __plotter(self):
+    def __plotter(self,values):
         fig = Figure(figsize=(7, 2.6), dpi=100)
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
         ax.set_xlim(80,self.max_freq)
+        #ax.set_ylim(40, 120) # Thiết lập dải hiển thị từ -60dB đến 60dB
+        ax.set_yticks(np.arange(30, 130, 20)) # Cứ 10 đơn vị vẽ 1 vạch chia
         
         fig.suptitle(self.phase)    
         ax.plot(self.high_df["freq"],self.high_df["high_limit"], color="red", linewidth=2, label="high_limit")
         ax.plot(self.low_df["freq"],self.low_df["low_limit"], color="red", linewidth=2, label="low_limit")
+
+        for col in values.columns.tolist():
+            values[col] = values[col].apply(pd.to_numeric, errors='coerce')
+            ax.plot(self.freq,values[col],linewidth=1)
         #ax.plot(self.freq,self.value,color="red", linewidth=2)
         
         
