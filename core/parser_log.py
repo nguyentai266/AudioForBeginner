@@ -6,15 +6,23 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
+import yaml
 from pandas._libs import index
 
 
 class log_parser(object):
 	def __init__(self):
 		super().__init__()
-		cur_path=os.path.dirname(os.path.abspath(__file__))
-		self.select_phases=json.load(open(os.path.join(cur_path,"config.json"),"r")).get("select_phase")
-	
+		config_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.yaml")
+		self.config=self.load_config(config_path)
+		self.select_phases=self.config["select_phase"]
+
+	def load_config(self,file_path):
+		with open(file_path, 'r', encoding='utf-8') as file:
+            # Sử dụng safe_load để đảm bảo an toàn bảo mật
+			config = yaml.safe_load(file)
+			return config
+
 	def load_limit(self,filepath):
 		col_use=["phase","measurement","low_limit","high_limit"]
 		df=pd.read_csv(filepath,header=1,usecols=col_use)

@@ -337,16 +337,21 @@ class _GraphTab(ctk.CTkFrame):
         for phase in phases:
             
             fig=plotter.maker_graph(limit_df=limit_df,data_df=df_sort,phase=phase)
+            #fig.tight_layout()
             self.pack_grarh(fig)
     # ---------------------------
     def pack_grarh(self,fig):
         
-        frame = ctk.CTkFrame(self.inner, height=800)
-        frame.pack(fill="both", padx=20, pady=15)
+        frame = ctk.CTkFrame(self.inner, height=600,width=800)
+        frame.pack(fill="both",expand=True,pady=10)
+        frame.columnconfigure(0,weight=1)
+        frame.rowconfigure(0,weight=1)
         frame.pack_propagate(False)
         canvas = FigureCanvasTkAgg(fig, master=frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+        canvas.get_tk_widget().config(width=700)
+        canvas.get_tk_widget().grid(column=0,row=0,sticky="nesw")
+        #pack(fill="both", expand=True,anchor="center")
     def clear_inner(self):
         for widget in self.inner.winfo_children():
             widget.destroy()
