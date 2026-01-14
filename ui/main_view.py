@@ -49,6 +49,10 @@ class _HomeTabView(ctk.CTkFrame):
         self.check_correlation=ctk.IntVar(value=0)
         self.check_grr=ctk.IntVar(value=0)
         self.check_masterchef_mode=ctk.IntVar(value=0)
+        self.list_dut=[""]
+        self.list_station=[""]
+        self.list_phase=[""]
+        self.list_freq=[""]
 
 
         self.grid_columnconfigure(1, weight=1)
@@ -79,19 +83,19 @@ class _HomeTabView(ctk.CTkFrame):
         self.label_notice.grid(row=0,column=1,columnspan=8,sticky="ew")
         #search_UI
         ctk.CTkLabel(search_frame,text="Station",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=0,sticky="nsew",padx=10,pady=10)
-        self.station=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=[""])
+        self.station=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_station)
         self.station.grid(row=1,column=1,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Dut SN",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=2,sticky="nsew",padx=10,pady=10)
-        self.dut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=[""],)
+        self.dut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_dut,)
         self.dut_id.grid(row=1,column=3,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Phase",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=4,sticky="nsew",padx=10,pady=10)
-        self.phase_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=[""],)
+        self.phase_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_phase,)
         self.phase_select.grid(row=1,column=5,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Frequency",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=6,sticky="nsew",padx=10,pady=10)
-        self.freq_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=[""],)
+        self.freq_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_freq,)
         self.freq_select.grid(row=1,column=7,sticky="nsew",pady=10)
 
         self.search_btn=ctk.CTkButton(search_frame,width=btn_width,text="Search",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=self.search,)
@@ -193,9 +197,16 @@ class _HomeTabView(ctk.CTkFrame):
                     return
                 else:
                     self.df_limit=pd.read_csv("limit.csv")
-                    self.df_data=pd.read_csv(path,index_col=0)
+                    self.df_data=pd.read_csv(path)
                     self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
                     self.table.make_table(self.df_data)
+
+            self.list_station=self.df_data['station_id'].unique().tolist()
+            self.station.configure(values=self.list_station)
+            self.list_dut=self.df_data['dut_id'].unique().tolist()
+            self.dut_id.configure(values=self.list_dut)
+            
+           
                     
                     
                 
@@ -324,7 +335,7 @@ class _GraphTab(ctk.CTkFrame):
         # ===== tạo nhiều biểu đồ =====
         #for i in range(8):
             #self.add_plot(i + 1)
-    def show_graph(self,limit_df,data_df):
+    '''def show_graph(self,limit_df,data_df):
         self.clear_inner() 
         phases=limit_df["phase"].unique()
         
@@ -338,8 +349,52 @@ class _GraphTab(ctk.CTkFrame):
             
             fig=plotter.maker_graph(limit_df=limit_df,data_df=df_sort,phase=phase)
             #fig.tight_layout()
+            self.pack_grarh(fig)'''
+    def show_graph(self, limit_df, data_df):
+        self.clear_inner()
+        self.show_loading()
+
+        t = threading.Thread(
+            target=self._process_and_plot,
+            args=(limit_df, data_df),
+            daemon=True
+        )
+        t.start()
+    
+    def _process_and_plot(self, limit_df, data_df):
+        phases = limit_df["phase"].unique()
+
+        df_t = data_df.T.reset_index()
+        df_t = df_t.rename(columns={"index": "measurement"})
+
+        df_sort = process_data.df_phase_freq(df_t)
+
+        figures = []
+        for phase in phases:
+            fig = plotter.maker_graph(
+                limit_df=limit_df,
+                data_df=df_sort,
+                phase=phase
+            )
+            figures.append(fig)
+
+        # Quay về main thread để vẽ UI
+        self.after(0, lambda: self._render_figures(figures))
+    def _render_figures(self, figures):
+        self.hide_loading()
+
+        for fig in figures:
             self.pack_grarh(fig)
-    # ---------------------------
+    def show_loading(self):
+        self.loading = ctk.CTkLabel(self.inner, text="Loading...")
+        self.loading.pack(pady=50)
+
+    def hide_loading(self):
+        if hasattr(self, "loading"):
+            self.loading.destroy()
+
+
+        # ---------------------------
     def pack_grarh(self,fig):
         
         frame = ctk.CTkFrame(self.inner, height=600,width=800)

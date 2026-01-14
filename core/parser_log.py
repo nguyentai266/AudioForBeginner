@@ -19,7 +19,6 @@ class log_parser(object):
 
 	def load_config(self,file_path):
 		with open(file_path, 'r', encoding='utf-8') as file:
-            # Sử dụng safe_load để đảm bảo an toàn bảo mật
 			config = yaml.safe_load(file)
 			return config
 
@@ -190,7 +189,8 @@ class log_parser(object):
 		df_copy=dataframe.drop(columns=["measurement"]).copy()
 		df_copy.to_csv("sdfasdf.csv",index=True)
 		return df_copy
-
+	def data_for_graph(self,df):
+		pass
 			
 		
 			

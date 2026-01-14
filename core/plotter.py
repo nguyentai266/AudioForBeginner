@@ -2,13 +2,14 @@
 import json
 import os
 
+import matplotlib
 import numpy as np
 import pandas as pd
 import yaml
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-
+matplotlib.use('Agg')
 class AudioMakeGraph(object):
     def __init__(self):
         
@@ -17,7 +18,6 @@ class AudioMakeGraph(object):
 
     def load_config(self,file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
-            # Sử dụng safe_load để đảm bảo an toàn bảo mật
             config = yaml.safe_load(file)
         return config
 
