@@ -44,15 +44,15 @@ class DrawChart(object):
         
         df_graph=data_df[data_df["phase"].isin([draw_by,phase])].copy()
         data_cols = [col for col in data_df.columns if col not in ['dut_id', 'Test_ID', 'phase']]
-        grouped=df_graph.groupby('station_id')
+        #grouped=df_graph.groupby('station_id')
     
-        df_graph.to_csv(f"phase/{phase}.csv")
+        #df_graph.to_csv(f"phase/{phase}.csv")
         self.freq_data=df_graph["freq"]
         self.max_freq=df_graph["freq"].max()
         
-        #values = df_graph.iloc[:, 2:]
+        values = df_graph.iloc[:, 2:]
         #values.to_csv(f"phase/{phase}.csv")
-        fig=self.__draw(grouped)
+        fig=self.__draw(values)
         return fig
 
         
@@ -73,8 +73,7 @@ class DrawChart(object):
         values = values.apply(pd.to_numeric, errors='coerce')
        
         x=self.freq_data.to_numpy()
-        for dut_id,group in values:
-            y_matrix = group[data_cols].to_numpy()
+        
         y=values.to_numpy()
 
         ax.plot(x,y,linewidth=0.8)

@@ -189,7 +189,7 @@ class _HomeTabView(ctk.CTkFrame):
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":
             if Path(path).is_dir():
-                self.df_limit,self.df_data=process_data.summary_data(path,mode="audio_sort")
+                self.df_limit,self.df_data=process_data.summary_data(path,mode="audio_full")
                 self.df_limit.to_csv("limit.csv",index=False)
                 
                 self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
