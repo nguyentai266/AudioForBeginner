@@ -1,6 +1,8 @@
 import os
 import threading
 import tkinter as tk
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
@@ -14,20 +16,22 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tksheet import Sheet
 
-from core.parser_log import log_parser
-from core.plotter import AudioMakeGraph
+from core.logger import setup_logging
+from core.parser import ParserLog
+from core.plotter import DrawChart
 
 TITLE_FONT=("Calibri",22,'bold')
 CONTENT_FONT=("Calibri",18,'bold')
 LABLE_FONT=("Calibri",14,'bold')
 BG_COLOR="#00A2E8"
 
-process_data=log_parser()
-plotter=AudioMakeGraph()
+process_data=ParserLog()
+plotter=DrawChart()
+logger=setup_logging()
 class MainView(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        
+        logger.info('Start Application')
         MainTabView=ctk.CTkTabview(self,anchor="nw",fg_color=BG_COLOR,text_color="black",text_color_disabled="black")
         MainTabView.pack(fill='both',expand=True)
         MainTabView._segmented_button.configure(font=TITLE_FONT)
@@ -180,6 +184,7 @@ class _HomeTabView(ctk.CTkFrame):
 
     def run_analyze(self):
         path=self.entry_input.get()
+        logger.info("Start analysis")
         if path == "":
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":
@@ -205,6 +210,7 @@ class _HomeTabView(ctk.CTkFrame):
             self.station.configure(values=self.list_station)
             self.list_dut=self.df_data['dut_id'].unique().tolist()
             self.dut_id.configure(values=self.list_dut)
+       
             
            
                     
@@ -260,13 +266,13 @@ class _HomeTabView(ctk.CTkFrame):
                 self.entry_output.insert(0,path)
 
     def masterchef(self,event=None):
-        if self.entry_input.get() == "bat chuc nang nau an":
+        if self.entry_input.get() == "bat che do nau an":
             self.check_masterchef_mode.set(value=1)
             self.masterchef_frame.grid(column=0,columnspan=3,row=15,pady=10)
             self.label_notice.configure(text="CHẾ ĐỘ NẤU ĂN")
             messagebox.showwarning(title="Dangerous",message="Đã bật chức năng nấu ăn")
             print("Now you are master chef")
-        if self.entry_input.get() == "tat chuc nang nau an":
+        if self.entry_input.get() == "tat che do nau an":
             self.check_masterchef_mode.set(value=0)
             self.masterchef_frame.grid_forget()
             self.label_notice.configure(text="CÓ LÀM THÌ MỚI CÓ ĂN")
@@ -332,66 +338,40 @@ class _GraphTab(ctk.CTkFrame):
         ax.imshow(img)
         ax.axis("off")
         self.pack_grarh(fig=fig)
-        # ===== tạo nhiều biểu đồ =====
-        #for i in range(8):
-            #self.add_plot(i + 1)
-    '''def show_graph(self,limit_df,data_df):
-        self.clear_inner() 
-        phases=limit_df["phase"].unique()
-        
-        df_t = data_df.T.reset_index()
-        df_t = df_t.rename(columns={"index": "measurement"})
-
-        df_sort=process_data.df_phase_freq(df_t) 
-        #df_sort.to_csv('dsdsds.csv',index=False)
-        
-        for phase in phases:
-            
-            fig=plotter.maker_graph(limit_df=limit_df,data_df=df_sort,phase=phase)
-            #fig.tight_layout()
-            self.pack_grarh(fig)'''
+      
     def show_graph(self, limit_df, data_df):
         self.clear_inner()
-        self.show_loading()
-
         t = threading.Thread(
             target=self._process_and_plot,
             args=(limit_df, data_df),
             daemon=True
         )
         t.start()
-    
+        logger.info("Completed Analysis")
     def _process_and_plot(self, limit_df, data_df):
         phases = limit_df["phase"].unique()
 
         df_t = data_df.T.reset_index()
         df_t = df_t.rename(columns={"index": "measurement"})
-
-        df_sort = process_data.df_phase_freq(df_t)
-
+        def prepare(phase):
+            return phase
         figures = []
-        for phase in phases:
-            fig = plotter.maker_graph(
-                limit_df=limit_df,
-                data_df=df_sort,
-                phase=phase
-            )
-            figures.append(fig)
-
-        # Quay về main thread để vẽ UI
+        df_sort = process_data.df_phase_freq(df_t)
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            for phase in executor.map(prepare, phases):
+                # VẼ Ở MAIN THREAD
+                fig = plotter.maker_graph(
+                    limit_df=limit_df,
+                    data_df=df_sort,
+                    phase=phase
+                )
+                figures.append(fig)
+       
         self.after(0, lambda: self._render_figures(figures))
     def _render_figures(self, figures):
-        self.hide_loading()
-
         for fig in figures:
             self.pack_grarh(fig)
-    def show_loading(self):
-        self.loading = ctk.CTkLabel(self.inner, text="Loading...")
-        self.loading.pack(pady=50)
-
-    def hide_loading(self):
-        if hasattr(self, "loading"):
-            self.loading.destroy()
+           
 
 
         # ---------------------------
@@ -431,7 +411,7 @@ class _TableTab(ctk.CTkFrame):
         
         #df=pd.read_csv("C:/Users/V1531673/Desktop/CODE/Audio Basic/summary.csv")
         
-        self.parser=log_parser()
+        self.parser=ParserLog()
         self.sheet = Sheet(self,data=None,column_headers = None, row_index = None,header_bg = "#f8f9fa", index_bg = "#f8f9fa")
 
 

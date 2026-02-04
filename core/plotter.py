@@ -9,29 +9,30 @@ import yaml
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
+from core.load_config import load_yaml
+from core.logger import setup_logging
+
+logger=setup_logging()
 matplotlib.use('Agg')
-class AudioMakeGraph(object):
+class DrawChart(object):
     def __init__(self):
-        
-        config_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.yaml")
-        self.config=self.load_config(config_path)
+        self.config=load_yaml()
 
-    def load_config(self,file_path):
-        with open(file_path, 'r', encoding='utf-8') as file:
-            config = yaml.safe_load(file)
-        return config
-
-    def maker_graph(self,limit_df,data_df,phase):
+    def maker_graph(self,limit_df,data_df,phase,draw_by="station_id"):
         self.phase=phase
         limit_df_by_phase=limit_df[limit_df["phase"]==phase].copy()
-        self.max_freq=limit_df_by_phase["freq"].max()
+        self.min_freq=limit_df_by_phase["freq"].min()
+        #self.max_freq=limit_df_by_phase["freq"].max()
+        ##
         limit_df_by_phase["low_limit"] = pd.to_numeric(limit_df_by_phase["low_limit"], errors="coerce")
         limit_df_by_phase["high_limit"] = pd.to_numeric(limit_df_by_phase["high_limit"], errors="coerce")
         limit_df_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
-        high_df=limit_df_by_phase[["freq","high_limit"]]
-        low_df=limit_df_by_phase[["freq","low_limit"]]
-        self.high_df=high_df.dropna(subset=["high_limit"])
-        self.low_df=low_df.dropna(subset=["low_limit"])
+        ##
+        self.freq_limit=limit_df_by_phase["freq"]
+        self.hsl=limit_df_by_phase['high_limit']
+        self.lsl=limit_df_by_phase['low_limit']
+        
+        
         #config plot 
         self.y_min=self.config["plot_config"][phase]["min"]
         self.y_max=self.config["plot_config"][phase]["max"]
@@ -40,55 +41,52 @@ class AudioMakeGraph(object):
             self.y_extend=self.y_step
         else:
             self.y_extend=self.y_step/2
-
-        df_graph=data_df[data_df["phase"]==phase].copy()
-        #df_graph.to_csv(f"phase/{phase}.csv")
-        self.freq=df_graph["freq"]
         
-        values = df_graph.iloc[:, 2:]
+        df_graph=data_df[data_df["phase"].isin([draw_by,phase])].copy()
+        data_cols = [col for col in data_df.columns if col not in ['dut_id', 'Test_ID', 'phase']]
+        grouped=df_graph.groupby('station_id')
+    
+        df_graph.to_csv(f"phase/{phase}.csv")
+        self.freq_data=df_graph["freq"]
+        self.max_freq=df_graph["freq"].max()
         
+        #values = df_graph.iloc[:, 2:]
         #values.to_csv(f"phase/{phase}.csv")
-        fig=self.__plotter(values)
-        
-
+        fig=self.__draw(grouped)
         return fig
 
         
 
 
             
-    def __plotter(self,values):
+    def __draw(self,values):
         fig = Figure(figsize=(7, 5), dpi=100)
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
-        ax.set_xlim(90,self.max_freq)
-        ax.set_ylim(self.y_min-self.y_extend,self.y_max+self.y_extend) # Thiết lập dải hiển thị từ -60dB đến 60dB
+        ax.set_xlim(self.min_freq,self.max_freq)
+        ax.set_ylim(self.y_min - self.y_extend,self.y_max + self.y_extend) # Thiết lập dải hiển thị từ -60dB đến 60dB
         ax.set_yticks(np.arange(self.y_min,self.y_max+self.y_extend, self.y_step)) 
         
         fig.suptitle(self.phase)    
-        ax.plot(self.high_df["freq"],self.high_df["high_limit"], color="red", linewidth=2, label="high_limit")
-        ax.plot(self.low_df["freq"],self.low_df["low_limit"], color="red", linewidth=2, label="low_limit")
+        ax.plot(self.freq_limit,self.hsl, color="red", linewidth=1.5, label="high_limit")
+        ax.plot(self.freq_limit,self.lsl, color="red", linewidth=1.5, label="low_limit")
+        values = values.apply(pd.to_numeric, errors='coerce')
+       
+        x=self.freq_data.to_numpy()
+        for dut_id,group in values:
+            y_matrix = group[data_cols].to_numpy()
+        y=values.to_numpy()
 
-        for col in values.columns.tolist():
-            values[col] = values[col].apply(pd.to_numeric, errors='coerce')
-            ax.plot(self.freq,values[col],linewidth=1)
-        #ax.plot(self.freq,self.value,color="red", linewidth=2)
-        
-        
+        ax.plot(x,y,linewidth=0.8)
         ax.axhline(y=0,color="#000000",linewidth=1,linestyle="--")
         ax.set_xscale("log")
-        
-        #ax.set_title(f"Frequency Response - DUT ")
         ax.set_xlabel("Frequency (Hz)")
-        #ax.set_ylabel("Level (dB)")
         ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-        ax.legend()
-        #fig.subplots_adjust(left=0.1, right=0.95, top=0.9, bottom=0.15)
-        fig.tight_layout() 
+        
         return fig
     
 if __name__ == "__main__":
-    draw=AudioMakeGraph()
+    draw=DrawChart()
     
     limit_df=pd.read_csv("limit.csv")
     data_df=pd.read_csv("sum.csv")

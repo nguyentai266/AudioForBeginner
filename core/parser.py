@@ -9,18 +9,14 @@ import pandas as pd
 import yaml
 from pandas._libs import index
 
+from core.load_config import load_yaml
 
-class log_parser(object):
+
+class ParserLog(object):
 	def __init__(self):
 		super().__init__()
-		config_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.yaml")
-		self.config=self.load_config(config_path)
+		self.config=load_yaml()
 		self.select_phases=self.config["select_phase"]
-
-	def load_config(self,file_path):
-		with open(file_path, 'r', encoding='utf-8') as file:
-			config = yaml.safe_load(file)
-			return config
 
 	def load_limit(self,filepath):
 		col_use=["phase","measurement","low_limit","high_limit"]
@@ -189,8 +185,17 @@ class log_parser(object):
 		df_copy=dataframe.drop(columns=["measurement"]).copy()
 		df_copy.to_csv("sdfasdf.csv",index=True)
 		return df_copy
-	def data_for_graph(self,df):
-		pass
+	@staticmethod
+	def filter_by_dut_station(dataFrame,phase_key,station_id="",dut_id=""):
+		raw_df=dataFrame[dataFrame["phase"]==phase_key].copy()
+		raw_df=raw_df[raw_df["phase"].isin(["dut_id","station_id",phase_key])]
+		raw_df_T=raw_df.T
+		df_by_dut=raw_df_T[raw_df_T["phase"]==dut_id]
+		return df_by_dut
+
+
+
+
 			
 		
 			
@@ -199,30 +204,9 @@ class log_parser(object):
 
 
 if __name__=="__main__":
-	#file="C:/Users/V1531673/Desktop/RFMS/Audio Basic/data_source/MT5_FVN-E1F3-G01_FATP-AUDIO_BJ25A-01_56100DLCQ00016_GRR_PASS_0-0_1766543317781.csv"
-	parser=log_parser()
-
-	#limit=parser.load_limit(filepath=file)
-	#pd.DataFrame.to_csv(limit,"limit.csv")
-	'''
-	app_path=os.getcwd()
-	log_dir=os.path.join(app_path,"data/")
-	mode="full"
-	df_limit,df_summary=parser.summary_data(log_dir,mode=mode)
-
-	df_summary_transpose=df_summary.T
-	df_limit.to_csv("limit.csv",index=False	)
-	df_summary_transpose.to_csv("summary.csv",index=True)'''
-	#parser.update_log_files("summary.csv","log")
-	path="summary.csv"
-	data=pd.read_csv(path)
-	print(data.columns)
 	
-
-
-	df=parser.df_phase_freq(data,select_phase=['dut_id','station_id',"spk-1_rb"])
-	print(df)
-	df.to_csv("test.csv",index=False)
+	parser=ParserLog()
+	
 	
 
 

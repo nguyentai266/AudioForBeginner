@@ -17,6 +17,8 @@ select_phase:
   - mic_3_fr_norm
   - mic_3_thd
   - mic_3_seal_chirp
+  - hac_1_fr
+  - hac_1_thdn
 
 plot_config:
   spk-1_fr:
@@ -90,7 +92,16 @@ plot_config:
   mic-3_seal_chirp:
     min: 30
     max: 70
-    step: 10  
+    step: 10
+  hac-1_thdn:
+    min: 0
+    max: 100
+    step: 10
+  hac-1_fr:
+    min: -60
+    max: 10
+    step: 5
+
 
 
 
