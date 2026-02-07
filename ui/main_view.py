@@ -49,10 +49,13 @@ class _HomeTabView(ctk.CTkFrame):
         #variable
         self.check_from_dir=ctk.IntVar(value=1)
         self.check_from_file=ctk.IntVar(value=0)
+        self.check_draw_by_dut=ctk.IntVar(value=0)
+        self.check_draw_by_station=ctk.IntVar(value=1)
         self.check_dut_compare=ctk.IntVar(value=1)
         self.check_correlation=ctk.IntVar(value=0)
         self.check_grr=ctk.IntVar(value=0)
         self.check_masterchef_mode=ctk.IntVar(value=0)
+        
         self.list_dut=[""]
         self.list_station=[""]
         self.list_phase=[""]
@@ -87,20 +90,20 @@ class _HomeTabView(ctk.CTkFrame):
         self.label_notice.grid(row=0,column=1,columnspan=8,sticky="ew")
         #search_UI
         ctk.CTkLabel(search_frame,text="Station",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=0,sticky="nsew",padx=10,pady=10)
-        self.station=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_station)
-        self.station.grid(row=1,column=1,sticky="nsew",pady=10)
+        self.CBBstation=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_station)
+        self.CBBstation.grid(row=1,column=1,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Dut SN",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=2,sticky="nsew",padx=10,pady=10)
-        self.dut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_dut,)
-        self.dut_id.grid(row=1,column=3,sticky="nsew",pady=10)
+        self.CBBdut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_dut,)
+        self.CBBdut_id.grid(row=1,column=3,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Phase",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=4,sticky="nsew",padx=10,pady=10)
-        self.phase_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_phase,)
-        self.phase_select.grid(row=1,column=5,sticky="nsew",pady=10)
+        self.CBBphase=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_phase,)
+        self.CBBphase.grid(row=1,column=5,sticky="nsew",pady=10)
 
         ctk.CTkLabel(search_frame,text="Frequency",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=6,sticky="nsew",padx=10,pady=10)
-        self.freq_select=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_freq,)
-        self.freq_select.grid(row=1,column=7,sticky="nsew",pady=10)
+        self.CBBfrequency=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_freq,)
+        self.CBBfrequency.grid(row=1,column=7,sticky="nsew",pady=10)
 
         self.search_btn=ctk.CTkButton(search_frame,width=btn_width,text="Search",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=self.search,)
         self.search_btn.grid(row=1,column=8,sticky="nsew",padx=10,pady=10)
@@ -124,7 +127,7 @@ class _HomeTabView(ctk.CTkFrame):
         self.sideBarFrame=ctk.CTkFrame(master,fg_color=BG_COLOR)
         self.sideBarFrame.pack(fill='both',expand=True)
         self.sideBarFrame.columnconfigure(1,weight=1)
-        self.sideBarFrame.rowconfigure(16,weight=1)
+        self.sideBarFrame.rowconfigure(19,weight=1)
 
         ctk.CTkLabel(self.sideBarFrame, text="Menu", font=TITLE_FONT,fg_color=BG_COLOR,).grid(row=0,column=0,columnspan=3,sticky="",pady=5)
         ctk.CTkLabel(self.sideBarFrame,text="From",font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=1,column=0,columnspan=3,pady=5,sticky='w')
@@ -149,14 +152,18 @@ class _HomeTabView(ctk.CTkFrame):
         ctk.CTkCheckBox(self.sideBarFrame,text="Correlation",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=10,column=0,sticky="w")
         ctk.CTkCheckBox(self.sideBarFrame,text="GRR",font=LABLE_FONT,corner_radius=5,variable=self.check_grr,command=lambda:self.check_logic_mode(3)).grid(row=11,column=0,sticky="w")
 
+        ctk.CTkLabel(self.sideBarFrame,text="Graph By", font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=12,column=0,columnspan=3,sticky="w",pady=10)
+        ctk.CTkCheckBox(self.sideBarFrame,text="Station",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_station,command=lambda:self.check_logic_draw(1)).grid(row=13,column=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="DUT",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_dut,command=lambda:self.check_logic_draw(2)).grid(row=14,column=0,sticky="w")
+
         self.btn_run=ctk.CTkButton(self.sideBarFrame,text="Run",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.run_analyze())
-        self.btn_run.grid(row=12,column=0,columnspan=3,sticky="",pady=10)
+        self.btn_run.grid(row=15,column=0,columnspan=3,sticky="",pady=10)
 
         self.btn_refresh=ctk.CTkButton(self.sideBarFrame,text="Refresh",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.refresh())
-        self.btn_refresh.grid(row=13,column=0,columnspan=3,sticky="",pady=10)
+        self.btn_refresh.grid(row=16,column=0,columnspan=3,sticky="",pady=10)
 
         self.btn_export_csv=ctk.CTkButton(self.sideBarFrame,text="Export",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.export_csv())
-        self.btn_export_csv.grid(row=14,column=0,columnspan=3,sticky="",pady=10)
+        self.btn_export_csv.grid(row=17,column=0,columnspan=3,sticky="",pady=10)
 
 
 
@@ -180,19 +187,25 @@ class _HomeTabView(ctk.CTkFrame):
         messagebox.showwarning(title="Warning",message="Đã nấu xong món")
         
         
-
+    def mode_draw(self):
+        if self.check_draw_by_dut.get() == 1:
+            self.draw_by="dut_id"
+        if self.check_draw_by_station.get() == 1:
+            self.draw_by="station_id"
 
     def run_analyze(self):
         path=self.entry_input.get()
         logger.info("Start analysis")
+        self.mode_draw()
+        logger.info(f"Draw by {self.draw_by}")
         if path == "":
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":
             if Path(path).is_dir():
-                self.df_limit,self.df_data=process_data.summary_data(path,mode="audio_full")
+                self.df_limit,self.df_data=process_data.summary_data(path,mode="audio_sort")
                 self.df_limit.to_csv("limit.csv",index=False)
                 
-                self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
+                self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data,drawBy=self.draw_by)
                 self.table.make_table(self.df_data)
                 
             if Path(path).is_file():
@@ -203,21 +216,19 @@ class _HomeTabView(ctk.CTkFrame):
                 else:
                     self.df_limit=pd.read_csv("limit.csv")
                     self.df_data=pd.read_csv(path)
-                    self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data)
+                    self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data,drawBy=self.draw_by)
                     self.table.make_table(self.df_data)
 
             self.list_station=self.df_data['station_id'].unique().tolist()
-            self.station.configure(values=self.list_station)
+            self.CBBstation.configure(values=self.list_station)
             self.list_dut=self.df_data['dut_id'].unique().tolist()
-            self.dut_id.configure(values=self.list_dut)
-       
+            self.CBBdut_id.configure(values=self.list_dut)
             
-           
-                    
-                    
-                
-        
-
+            self.list_phase=self.df_limit["phase"].unique().tolist()
+            self.CBBphase.configure(values=self.list_phase)
+            self.list_freq=self.df_limit['freq'].astype("str").unique().tolist()
+            self.CBBfrequency.configure(values=self.list_freq)      
+            
 
 
     def select_file_or_dir(self):
@@ -246,6 +257,11 @@ class _HomeTabView(ctk.CTkFrame):
         if selection == 1: self.check_dut_compare.set(1)
         if selection == 2: self.check_correlation.set(1)
         if selection == 3: self.check_grr.set(1)
+    def check_logic_draw(self,selection):
+        self.check_draw_by_dut.set(0)
+        self.check_draw_by_station.set(0)
+        if selection == 1: self.check_draw_by_station.set(1)
+        if selection == 2: self.check_draw_by_dut.set(1)
 
 
     def select_dir(self,mode="input"):
@@ -268,7 +284,7 @@ class _HomeTabView(ctk.CTkFrame):
     def masterchef(self,event=None):
         if self.entry_input.get() == "bat che do nau an":
             self.check_masterchef_mode.set(value=1)
-            self.masterchef_frame.grid(column=0,columnspan=3,row=15,pady=10)
+            self.masterchef_frame.grid(column=0,columnspan=3,row=18,pady=10)
             self.label_notice.configure(text="CHẾ ĐỘ NẤU ĂN")
             messagebox.showwarning(title="Dangerous",message="Đã bật chức năng nấu ăn")
             print("Now you are master chef")
@@ -339,7 +355,7 @@ class _GraphTab(ctk.CTkFrame):
         ax.axis("off")
         self.pack_grarh(fig=fig)
       
-    def show_graph(self, limit_df, data_df):
+    def show_graph(self, limit_df, data_df,drawBy):
         self.clear_inner()
         t = threading.Thread(
             target=self._process_and_plot,
@@ -348,8 +364,9 @@ class _GraphTab(ctk.CTkFrame):
         )
         t.start()
         logger.info("Completed Analysis")
-    def _process_and_plot(self, limit_df, data_df):
+    def old_process_and_plot(self, limit_df, data_df):
         phases = limit_df["phase"].unique()
+        
 
         df_t = data_df.T.reset_index()
         df_t = df_t.rename(columns={"index": "measurement"})
@@ -368,6 +385,37 @@ class _GraphTab(ctk.CTkFrame):
                 figures.append(fig)
        
         self.after(0, lambda: self._render_figures(figures))
+    
+    def _process_and_plot(self, limit_df, data_df):
+        phases = limit_df["phase"].unique()
+
+        # TRANSPOSE 1 LẦN DUY NHẤT
+        df_t = (
+            data_df
+            .T
+            .reset_index()
+            .rename(columns={"index": "measurement"})
+        )
+
+        # TIỀN XỬ LÝ DATA (nặng) → song song
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            future = executor.submit(process_data.df_phase_freq, df_t)
+            df_sort = future.result()
+
+        figures = []
+
+        # VẼ → TUẦN TỰ (NHANH HƠN + AN TOÀN)
+        for phase in phases:
+            fig = plotter.maker_graph(
+                limit_df=limit_df,
+                data_df=df_sort,
+                phase=phase
+            )
+            figures.append(fig)
+
+        self.after(0, lambda: self._render_figures(figures))
+
+
     def _render_figures(self, figures):
         for fig in figures:
             self.pack_grarh(fig)
