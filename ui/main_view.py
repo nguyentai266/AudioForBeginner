@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 import tkinter as tk
 from concurrent.futures import ThreadPoolExecutor
@@ -357,6 +358,7 @@ class _GraphTab(ctk.CTkFrame):
       
     def show_graph(self, limit_df, data_df,drawBy):
         self.clear_inner()
+        self.drawBy=drawBy
         t = threading.Thread(
             target=self._process_and_plot,
             args=(limit_df, data_df),
@@ -390,26 +392,26 @@ class _GraphTab(ctk.CTkFrame):
         phases = limit_df["phase"].unique()
 
         # TRANSPOSE 1 LẦN DUY NHẤT
-        df_t = (
-            data_df
-            .T
-            .reset_index()
-            .rename(columns={"index": "measurement"})
-        )
+        df_t = (data_df.T.reset_index().rename(columns={"index": "measurement"}))
 
         # TIỀN XỬ LÝ DATA (nặng) → song song
+        '''
         with ThreadPoolExecutor(max_workers=4) as executor:
             future = executor.submit(process_data.df_phase_freq, df_t)
             df_sort = future.result()
-
+        '''
+        #df_sort = process_data.df_phase_freq(df_t)
         figures = []
 
         # VẼ → TUẦN TỰ (NHANH HƠN + AN TOÀN)
         for phase in phases:
+            df_phase_filter=data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.drawBy)})$").copy()
+            groups_data=process_data.group_data(df_phase_filter,groupBy=self.drawBy)
             fig = plotter.maker_graph(
                 limit_df=limit_df,
-                data_df=df_sort,
-                phase=phase
+                data_df=groups_data,  # gui vao dataframe dang long
+                phase=phase,
+                
             )
             figures.append(fig)
 

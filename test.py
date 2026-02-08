@@ -13,4 +13,4 @@ df_1.columns = df_1.iloc[0]
 # xoá 2 hàng đầu (header cũ + header mới vừa dùng)
 df_1 = df_1.iloc[1:].reset_index(drop=True)
 
-print(df_1)
+print(df_1["phase"])
