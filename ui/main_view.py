@@ -74,9 +74,12 @@ class _HomeTabView(ctk.CTkFrame):
 
         self.path_input=""
         self.path_output=""
-        
-        
 
+        self.df_data_raw=None
+        self.df_limit_raw=None
+
+        self.df_limit_correlation=None
+        self.df_data_correlation=None
         
 
     def _content_view(self,master):
@@ -177,9 +180,8 @@ class _HomeTabView(ctk.CTkFrame):
         pass
     def export_csv(self):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
-        df_export=self.df_data
-        df_export.to_csv(path,index=False)  
-        messagebox.showinfo(title="Notice",message=f"Export csv file completed")
+        self.df_data_raw.to_csv(path,index=False)  
+        messagebox.showinfo(title="Notice",message=f"Export CSV file complete.")
 
     def chef(self):
         summary_file=filedialog.askopenfilename(title="Select csv summary file",filetypes=[("CSV files", "*.csv")])
@@ -201,36 +203,50 @@ class _HomeTabView(ctk.CTkFrame):
         logger.info(f"Draw by {self.draw_by}")
         if path == "":
             messagebox.showinfo(title="Notice",message="Please input data log")
-        if path != "":
+        if path != "":     
             if Path(path).is_dir():
-                self.df_limit,self.df_data=process_data.summary_data(path,mode="audio_full")
-                self.df_limit.to_csv("limit.csv",index=False)
-                
-                self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data,drawBy=self.draw_by)
-                self.table.make_table(self.df_data)
+                self.df_limit_raw,self.df_data_raw=process_data.summary_data(path,mode="audio_full")
+                self.df_limit_raw.to_csv("limit.csv",index=False)
                 
             if Path(path).is_file():
                 if not os.path.exists("limit.csv"):
-                    
                     messagebox.showerror(title="Warning",message="Không tìm thấy file limit, vui lòng chuyển sang folder và chạy một log bất kì để tạo file limit")
                     return
                 else:
-                    self.df_limit=pd.read_csv("limit.csv")
-                    self.df_data=pd.read_csv(path)
-                    self.graph.show_graph(limit_df=self.df_limit,data_df=self.df_data,drawBy=self.draw_by)
-                    self.table.make_table(self.df_data)
+                    self.df_limit_raw=pd.read_csv("limit.csv")
+                    self.df_data_raw=pd.read_csv(path)
+            
 
-            self.list_station=self.df_data['station_id'].unique().tolist()
+            self.list_station=self.df_data_raw['station_id'].unique().tolist()
             self.CBBstation.configure(values=self.list_station)
-            self.list_dut=self.df_data['dut_id'].unique().tolist()
+            self.list_dut=self.df_data_raw['dut_id'].unique().tolist()
             self.CBBdut_id.configure(values=self.list_dut)
             
-            self.list_phase=self.df_limit["phase"].unique().tolist()
+            self.list_phase=self.df_limit_raw["phase"].unique().tolist()
             self.CBBphase.configure(values=self.list_phase)
-            self.list_freq=self.df_limit['freq'].astype("str").unique().tolist()
-            self.CBBfrequency.configure(values=self.list_freq)      
-            
+            self.list_freq=self.df_limit_raw['freq'].astype("str").unique().tolist()
+            self.CBBfrequency.configure(values=self.list_freq)
 
+            self.logic_running_analysis()
+
+    def logic_running_analysis(self):
+        if self.check_dut_compare.get() == 1 :
+            logger.info("run mode dut compare")
+            self.dut_compare()
+        if self.check_correlation.get() == 1:
+            logger.info("run mode correlation")
+            self.correlation()
+        if self.check_grr.get() == 1:
+            logger.info("run mode GRR")
+            self.grr()
+
+    def dut_compare(self):
+        self.graph.show_graph(limit_df=self.df_limit_raw,data_df=self.df_data_raw,drawBy=self.draw_by)
+        self.table.make_table(self.df_data_raw)
+    def correlation(self):
+        pass
+    def grr(self):
+        pass
 
     def select_file_or_dir(self):
         if self.check_from_dir.get()==1:
@@ -246,7 +262,6 @@ class _HomeTabView(ctk.CTkFrame):
         # Chỉ bật lại nút vừa nhấn
         if selection == 1: self.check_from_dir.set(1)
         if selection == 2: self.check_from_file.set(1)
-        
 
     def check_logic_mode(self, selection):
     # Tắt tất cả các nút
@@ -258,6 +273,7 @@ class _HomeTabView(ctk.CTkFrame):
         if selection == 1: self.check_dut_compare.set(1)
         if selection == 2: self.check_correlation.set(1)
         if selection == 3: self.check_grr.set(1)
+
     def check_logic_draw(self,selection):
         self.check_draw_by_dut.set(0)
         self.check_draw_by_station.set(0)
@@ -297,9 +313,6 @@ class _HomeTabView(ctk.CTkFrame):
             print("Now you are normal person")
         else:
             pass
-
-
-
 
     def search(self):
         pass
@@ -375,10 +388,11 @@ class _GraphTab(ctk.CTkFrame):
         # VẼ → TUẦN TỰ (NHANH HƠN + AN TOÀN)
         for phase in phases:
             df_phase_filter=data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.drawBy)})$").copy()
+            limit_df_by_phase=limit_df[limit_df["phase"]==phase].copy()
             groups_data=process_data.group_data(df_phase_filter,groupBy=self.drawBy)
             fig = plotter.maker_graph(
-                limit_df=limit_df,
-                data_df=groups_data,  # gui vao dataframe dang long
+                df_limit_by_phase=limit_df_by_phase,
+                groups=groups_data,  # gui vao dataframe dang long
                 phase=phase,
                 
             )

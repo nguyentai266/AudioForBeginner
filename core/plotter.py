@@ -21,19 +21,19 @@ class DrawChart(object):
     def __init__(self):
         self.config=load_yaml()
 
-    def maker_graph(self,limit_df,data_df,phase,draw_by="station_id"):
+    def maker_graph(self,df_limit_by_phase,groups,phase,mode="defaut"):
         self.phase=phase
-        limit_df_by_phase=limit_df[limit_df["phase"]==phase].copy()
-        self.min_freq=limit_df_by_phase["freq"].min()
-        #self.max_freq=limit_df_by_phase["freq"].max()
+        
+        self.min_freq=df_limit_by_phase["freq"].min()
+        #self.max_freq=df_limit_by_phase["freq"].max()
         ##
-        limit_df_by_phase["low_limit"] = pd.to_numeric(limit_df_by_phase["low_limit"], errors="coerce")
-        limit_df_by_phase["high_limit"] = pd.to_numeric(limit_df_by_phase["high_limit"], errors="coerce")
-        limit_df_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
+        df_limit_by_phase["low_limit"] = pd.to_numeric(df_limit_by_phase["low_limit"], errors="coerce")
+        df_limit_by_phase["high_limit"] = pd.to_numeric(df_limit_by_phase["high_limit"], errors="coerce")
+        df_limit_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
         ##
-        self.freq_limit=limit_df_by_phase["freq"]
-        self.hsl=limit_df_by_phase['high_limit']
-        self.lsl=limit_df_by_phase['low_limit']
+        self.freq_limit=df_limit_by_phase["freq"]
+        self.usl=df_limit_by_phase['high_limit']
+        self.lsl=df_limit_by_phase['low_limit']
         
         
         #config plot 
@@ -45,56 +45,17 @@ class DrawChart(object):
         else:
             self.y_extend=self.y_step/2
        
-        self.freq_data=limit_df_by_phase["freq"]
-        self.max_freq=limit_df_by_phase["freq"].max()
+        self.freq_data=df_limit_by_phase["freq"]
+        self.max_freq=df_limit_by_phase["freq"].max()
 
-        fig=self.__draw(data_df)
+        fig=self.__draw(groups=groups)
         return fig
 
         
 
 
-            
-    def old__draw(self,values):
-        fig = Figure(figsize=(7, 5), dpi=100)
-        fig.patch.set_facecolor("#e6e6e6")
-        ax = fig.add_subplot(111)
-        ax.set_xlim(self.min_freq,self.max_freq)
-        ax.set_ylim(self.y_min - self.y_extend,self.y_max + self.y_extend) # Thiết lập dải hiển thị từ -60dB đến 60dB
-        ax.set_yticks(np.arange(self.y_min,self.y_max+self.y_extend, self.y_step)) 
-        
-        fig.suptitle(self.phase)    
-        ax.plot(self.freq_limit,self.hsl, color="red", linewidth=1.5, label="high_limit")
-        ax.plot(self.freq_limit,self.lsl, color="red", linewidth=1.5, label="low_limit")
-        
-        colors = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
-        used_labels = []
-        for key,group in values:
-            #group.T.to_csv("data_test.csv")
-            df_T=group.T.reset_index().rename(columns={"index": "measurement"})
-            value_df=parser.df_phase_freq(df_T)
-            x=value_df["freq"].to_numpy()
-            color=next(colors)
-            values = value_df.iloc[:, 2:]
-            values = values.apply(pd.to_numeric, errors='coerce')
-            y=values.to_numpy()
 
-            if key not in used_labels:
-                ax.plot(x, y, linewidth=0.8,color=color, label=key)
-                used_labels.append(key)
-            else:
-                ax.plot(x, y, linewidth=0.8,color=color)
-
-            
-
-        ax.axhline(y=0,color="#000000",linewidth=1,linestyle="--")
-        ax.set_xscale("log")
-        ax.set_xlabel("Frequency (Hz)")
-        ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-        ax.legend()
-        return fig
-
-    def __draw(self, values):
+    def __draw(self, groups):
         fig = Figure(figsize=(7, 5), dpi=100)
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
@@ -105,13 +66,13 @@ class DrawChart(object):
 
         fig.suptitle(self.phase)
 
-        ax.plot(self.freq_limit, self.hsl, color="red", linewidth=1.5, label="high_limit")
+        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5, label="high_limit")
         ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5, label="low_limit")
 
         color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
         color_map = {}   # key -> color
 
-        for key, group in values:
+        for key, group in groups:
             df_T = group.T.reset_index().rename(columns={"index": "measurement"})
             value_df = parser.df_phase_freq(df_T)
 
