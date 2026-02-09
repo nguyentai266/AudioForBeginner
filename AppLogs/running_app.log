@@ -10055,3 +10055,32 @@
 2026-02-09 10:53:06 [INFO] - Draw by station_id
 2026-02-09 10:53:07 [INFO] - run mode dut compare
 2026-02-09 10:53:11 [INFO] - Completed Analyze
+2026-02-09 11:05:50 [INFO] - Start Application
+2026-02-09 11:05:58 [INFO] - Start analysis
+2026-02-09 11:05:58 [INFO] - Draw by station_id
+2026-02-09 11:06:00 [INFO] - run mode dut compare
+2026-02-09 11:06:07 [INFO] - Completed Analyze
+2026-02-09 11:07:40 [INFO] - Start Application
+2026-02-09 11:08:03 [INFO] - Start analysis
+2026-02-09 11:08:03 [INFO] - Draw by station_id
+2026-02-09 11:08:05 [INFO] - run mode dut compare
+2026-02-09 11:08:12 [INFO] - Completed Analyze
+2026-02-09 11:10:31 [INFO] - Start Application
+2026-02-09 11:10:40 [INFO] - Start analysis
+2026-02-09 11:10:40 [INFO] - Draw by station_id
+2026-02-09 11:10:42 [INFO] - run mode dut compare
+2026-02-09 11:10:47 [INFO] - Completed Analyze
+2026-02-09 11:11:20 [INFO] - Start analysis
+2026-02-09 11:11:20 [INFO] - Draw by dut_id
+2026-02-09 11:11:22 [INFO] - run mode dut compare
+2026-02-09 11:11:27 [INFO] - Completed Analyze
+2026-02-09 11:11:59 [INFO] - Start Application
+2026-02-09 11:12:09 [INFO] - Start analysis
+2026-02-09 11:12:09 [INFO] - Draw by station_id
+2026-02-09 11:12:10 [INFO] - run mode dut compare
+2026-02-09 11:12:14 [INFO] - Completed Analyze
+2026-02-09 11:13:31 [INFO] - Start Application
+2026-02-09 11:13:51 [INFO] - Start analysis
+2026-02-09 11:13:51 [INFO] - Draw by station_id
+2026-02-09 11:13:52 [INFO] - run mode dut compare
+2026-02-09 11:13:57 [INFO] - Completed Analyze

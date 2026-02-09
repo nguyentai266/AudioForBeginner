@@ -56,7 +56,7 @@ class DrawChart(object):
 
 
     def __draw(self, groups):
-        fig = Figure(figsize=(7, 5), dpi=100)
+        fig = Figure(figsize=(9, 7), dpi=100)
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
 
@@ -90,7 +90,7 @@ class DrawChart(object):
                 ax.plot(
                     x,
                     values_y[col].to_numpy(),
-                    linewidth=1,
+                    linewidth=1.5,
                     color=color_map[key],
                     label=key if first else "_nolegend_"
                 )
