@@ -9834,6 +9834,7 @@
 2026-02-07 11:05:28 [INFO] - Start analysis
 2026-02-07 11:05:28 [INFO] - Draw by station_id
 2026-02-07 11:05:29 [INFO] - Completed Analysis
+<<<<<<< HEAD
 2026-02-08 16:43:21 [INFO] - Start Application
 2026-02-08 16:43:33 [INFO] - Start analysis
 2026-02-08 16:43:33 [INFO] - Draw by station_id
@@ -9845,3 +9846,114 @@
 2026-02-08 16:53:45 [INFO] - Start analysis
 2026-02-08 16:53:45 [INFO] - Draw by station_id
 2026-02-08 16:53:46 [INFO] - Completed Analysis
+=======
+2026-02-08 21:36:24 [INFO] - Start Application
+2026-02-08 21:36:34 [INFO] - Start analysis
+2026-02-08 21:36:34 [INFO] - Draw by station_id
+2026-02-08 21:36:35 [INFO] - Completed Analysis
+2026-02-08 21:44:50 [INFO] - Start Application
+2026-02-08 21:44:56 [INFO] - Start analysis
+2026-02-08 21:44:56 [INFO] - Draw by station_id
+2026-02-08 21:44:57 [INFO] - Completed Analysis
+2026-02-08 21:45:03 [INFO] - Start analysis
+2026-02-08 21:45:03 [INFO] - Draw by station_id
+2026-02-08 21:45:03 [INFO] - Completed Analysis
+2026-02-08 22:00:59 [INFO] - Start Application
+2026-02-08 22:01:08 [INFO] - Start analysis
+2026-02-08 22:01:08 [INFO] - Draw by station_id
+2026-02-08 22:01:08 [INFO] - Completed Analysis
+2026-02-08 22:54:36 [INFO] - Start Application
+2026-02-08 22:54:45 [INFO] - Start analysis
+2026-02-08 22:54:45 [INFO] - Draw by station_id
+2026-02-08 22:54:45 [INFO] - Completed Analysis
+2026-02-08 22:55:59 [INFO] - Start Application
+2026-02-08 22:56:04 [INFO] - Start analysis
+2026-02-08 22:56:04 [INFO] - Draw by station_id
+2026-02-08 22:56:04 [INFO] - Completed Analysis
+2026-02-08 22:56:34 [INFO] - Start Application
+2026-02-08 22:56:39 [INFO] - Start analysis
+2026-02-08 22:56:39 [INFO] - Draw by station_id
+2026-02-08 22:56:40 [INFO] - Completed Analysis
+2026-02-08 22:57:34 [INFO] - Start analysis
+2026-02-08 22:57:34 [INFO] - Draw by station_id
+2026-02-08 22:57:34 [INFO] - Completed Analysis
+2026-02-08 22:57:42 [INFO] - Start Application
+2026-02-08 22:57:48 [INFO] - Start analysis
+2026-02-08 22:57:48 [INFO] - Draw by station_id
+2026-02-08 22:57:48 [INFO] - Completed Analysis
+2026-02-08 22:59:43 [INFO] - Start Application
+2026-02-08 22:59:47 [INFO] - Start analysis
+2026-02-08 22:59:47 [INFO] - Draw by station_id
+2026-02-08 22:59:47 [INFO] - Completed Analysis
+2026-02-08 23:00:00 [INFO] - Start Application
+2026-02-08 23:00:05 [INFO] - Start analysis
+2026-02-08 23:00:05 [INFO] - Draw by station_id
+2026-02-08 23:00:05 [INFO] - Completed Analysis
+2026-02-08 23:01:13 [INFO] - Start Application
+2026-02-08 23:01:32 [INFO] - Start analysis
+2026-02-08 23:01:32 [INFO] - Draw by station_id
+2026-02-08 23:01:33 [INFO] - Completed Analysis
+2026-02-08 23:02:43 [INFO] - Start analysis
+2026-02-08 23:02:43 [INFO] - Draw by station_id
+2026-02-08 23:02:43 [INFO] - Completed Analysis
+2026-02-08 23:04:09 [INFO] - Start Application
+2026-02-08 23:04:17 [INFO] - Start analysis
+2026-02-08 23:04:17 [INFO] - Draw by station_id
+2026-02-08 23:04:17 [INFO] - Completed Analysis
+2026-02-08 23:08:52 [INFO] - Start Application
+2026-02-08 23:08:57 [INFO] - Start analysis
+2026-02-08 23:08:57 [INFO] - Draw by station_id
+2026-02-08 23:08:57 [INFO] - Completed Analysis
+2026-02-08 23:10:06 [INFO] - Start Application
+2026-02-08 23:10:10 [INFO] - Start analysis
+2026-02-08 23:10:10 [INFO] - Draw by station_id
+2026-02-08 23:10:10 [INFO] - Completed Analysis
+2026-02-08 23:14:31 [INFO] - Start Application
+2026-02-08 23:14:36 [INFO] - Start analysis
+2026-02-08 23:14:36 [INFO] - Draw by station_id
+2026-02-08 23:14:36 [INFO] - Completed Analysis
+2026-02-08 23:15:07 [INFO] - Start analysis
+2026-02-08 23:15:07 [INFO] - Draw by dut_id
+2026-02-08 23:15:08 [INFO] - Completed Analysis
+2026-02-08 23:15:15 [INFO] - Start analysis
+2026-02-08 23:15:15 [INFO] - Draw by station_id
+2026-02-08 23:15:15 [INFO] - Completed Analysis
+2026-02-08 23:16:10 [INFO] - Start Application
+2026-02-08 23:16:17 [INFO] - Start analysis
+2026-02-08 23:16:17 [INFO] - Draw by station_id
+2026-02-08 23:16:18 [INFO] - Completed Analysis
+2026-02-08 23:16:38 [INFO] - Start analysis
+2026-02-08 23:16:38 [INFO] - Draw by station_id
+2026-02-08 23:16:39 [INFO] - Completed Analysis
+2026-02-08 23:16:45 [INFO] - Start analysis
+2026-02-08 23:16:45 [INFO] - Draw by dut_id
+2026-02-08 23:16:46 [INFO] - Completed Analysis
+>>>>>>> 6781bcebee00bfc3f411d52a052231eb8661a4ea
+2026-02-09 07:58:12 [INFO] - Start Application
+2026-02-09 07:58:41 [INFO] - Start analysis
+2026-02-09 07:58:41 [INFO] - Draw by station_id
+2026-02-09 07:58:42 [INFO] - Completed Analysis
+2026-02-09 08:02:56 [INFO] - Start Application
+2026-02-09 08:03:17 [INFO] - Start analysis
+2026-02-09 08:03:17 [INFO] - Draw by station_id
+2026-02-09 08:03:20 [INFO] - Start analysis
+2026-02-09 08:03:20 [INFO] - Draw by station_id
+2026-02-09 08:04:07 [INFO] - Start Application
+2026-02-09 08:04:22 [INFO] - Start analysis
+2026-02-09 08:04:22 [INFO] - Draw by station_id
+2026-02-09 08:04:23 [INFO] - Completed Analysis
+2026-02-09 08:04:48 [INFO] - Start analysis
+2026-02-09 08:04:48 [INFO] - Draw by dut_id
+2026-02-09 08:04:49 [INFO] - Completed Analysis
+2026-02-09 08:08:15 [INFO] - Start Application
+2026-02-09 08:08:32 [INFO] - Start analysis
+2026-02-09 08:08:32 [INFO] - Draw by station_id
+2026-02-09 08:08:36 [INFO] - Completed Analyze
+2026-02-09 08:10:22 [INFO] - Start Application
+2026-02-09 08:10:35 [INFO] - Start analysis
+2026-02-09 08:10:35 [INFO] - Draw by station_id
+2026-02-09 08:10:39 [INFO] - Completed Analyze
+2026-02-09 08:13:20 [INFO] - Start Application
+2026-02-09 08:13:29 [INFO] - Start analysis
+2026-02-09 08:13:29 [INFO] - Draw by station_id
+2026-02-09 08:13:33 [INFO] - Completed Analyze

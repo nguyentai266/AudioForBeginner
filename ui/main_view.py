@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 import tkinter as tk
 from concurrent.futures import ThreadPoolExecutor
@@ -357,59 +358,29 @@ class _GraphTab(ctk.CTkFrame):
       
     def show_graph(self, limit_df, data_df,drawBy):
         self.clear_inner()
+        self.drawBy=drawBy
         t = threading.Thread(
             target=self._process_and_plot,
             args=(limit_df, data_df),
             daemon=True
         )
         t.start()
-        logger.info("Completed Analysis")
-    def old_process_and_plot(self, limit_df, data_df):
-        phases = limit_df["phase"].unique()
-        
-
-        df_t = data_df.T.reset_index()
-        df_t = df_t.rename(columns={"index": "measurement"})
-        def prepare(phase):
-            return phase
-        figures = []
-        df_sort = process_data.df_phase_freq(df_t)
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            for phase in executor.map(prepare, phases):
-                # VẼ Ở MAIN THREAD
-                fig = plotter.maker_graph(
-                    limit_df=limit_df,
-                    data_df=df_sort,
-                    phase=phase
-                )
-                figures.append(fig)
-       
-        self.after(0, lambda: self._render_figures(figures))
+        #logger.info("Completed Analysis")
     
     def _process_and_plot(self, limit_df, data_df):
         phases = limit_df["phase"].unique()
-
-        # TRANSPOSE 1 LẦN DUY NHẤT
-        df_t = (
-            data_df
-            .T
-            .reset_index()
-            .rename(columns={"index": "measurement"})
-        )
-
-        # TIỀN XỬ LÝ DATA (nặng) → song song
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            future = executor.submit(process_data.df_phase_freq, df_t)
-            df_sort = future.result()
 
         figures = []
 
         # VẼ → TUẦN TỰ (NHANH HƠN + AN TOÀN)
         for phase in phases:
+            df_phase_filter=data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.drawBy)})$").copy()
+            groups_data=process_data.group_data(df_phase_filter,groupBy=self.drawBy)
             fig = plotter.maker_graph(
                 limit_df=limit_df,
-                data_df=df_sort,
-                phase=phase
+                data_df=groups_data,  # gui vao dataframe dang long
+                phase=phase,
+                
             )
             figures.append(fig)
 
@@ -418,8 +389,11 @@ class _GraphTab(ctk.CTkFrame):
 
     def _render_figures(self, figures):
         for fig in figures:
-            self.pack_grarh(fig)
-           
+            if fig == figures[-1]:
+                logger.info("Completed Analyze")
+                self.pack_grarh(fig)
+            else:
+                self.pack_grarh(fig)
 
 
         # ---------------------------

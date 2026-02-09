@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 import yaml
+
+#from load_config import load_yaml
 from pandas._libs import index
 
 from core.load_config import load_yaml
@@ -186,8 +188,10 @@ class ParserLog(object):
 			dataframe["phase"] = dataframe["phase"].fillna(dataframe["measurement"])
 			
 		df_copy=dataframe.drop(columns=["measurement"]).copy()
-		df_copy.to_csv("sdfasdf.csv",index=True)
+		#df_copy.to_csv("sdfasdf.csv",index=True)
 		return df_copy
+	
+
 	@staticmethod
 	def filter_by_dut_station(dataFrame,phase_key,station_id="",dut_id=""):
 		raw_df=dataFrame[dataFrame["phase"]==phase_key].copy()
@@ -195,6 +199,23 @@ class ParserLog(object):
 		raw_df_T=raw_df.T
 		df_by_dut=raw_df_T[raw_df_T["phase"]==dut_id]
 		return df_by_dut
+	
+	def group_data(self,dataFrame,groupBy):
+		if groupBy == "dut_id":
+			groups = [(key, g) for key, g in dataFrame.groupby(groupBy)]
+
+			
+		elif groupBy == "station_id":
+			groups = [(key, g) for key, g in dataFrame.groupby(groupBy)]
+		else:
+			return
+		return groups
+
+
+	
+	
+	
+
 	
 
 
@@ -206,7 +227,8 @@ class ParserLog(object):
 	
 
 
-if __name__=="__main__":
+if __name__=="__main__":\
+	
 	#file="C:/Users/V1531673/Desktop/RFMS/Audio Basic/data_source/MT5_FVN-E1F3-G01_FATP-AUDIO_BJ25A-01_56100DLCQ00016_GRR_PASS_0-0_1766543317781.csv"
 	parser=ParserLog()
 
@@ -222,15 +244,20 @@ if __name__=="__main__":
 	df_limit.to_csv("limit.csv",index=False	)
 	df_summary_transpose.to_csv("summary.csv",index=True)'''
 	#parser.update_log_files("summary.csv","log")
-	path="summary.csv"
-	data=pd.read_csv(path)
-	print(data.columns)
+	path="C:/Users/nguye/Desktop/AudioForBeginner/sum.csv"
+	dataFrame=pd.read_csv(path)
+	phase='mic-1_fr'
+	sort=dataFrame.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|station_id)$").copy()
+	groups=parser.group_data(sort,'mic-1_fr','station_id')
+	for dut,group in groups:
+		group.to_csv(f"C:/Users/nguye/Desktop/AudioForBeginner/dut/{dut}.csv")
+	print("ok")
+	
 	
 
 
-	df=parser.df_phase_freq(data,select_phase=['dut_id','station_id',"spk-1_rb"])
-	print(df)
-	df.to_csv("test.csv",index=False)
+	#df=parser.df_phase_freq(data,select_phase=['dut_id','station_id',"spk-1_rb"])
+	##df.to_csv("test.csv",index=False)
 	
 
 
