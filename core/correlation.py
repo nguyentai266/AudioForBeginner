@@ -1,93 +1,118 @@
-from parser import ParserLog
-
 import pandas as pd
 
 from core.load_config import load_yaml
 from core.logger import setup_logging
+from core.parser import ParserLog
 
 parser=ParserLog()
 config=load_yaml()
 logger=setup_logging()
 
-class AudioAnalysis:
+import numpy as np
+import pandas as pd
+
+
+class AudioCorrelation:
     def __init__(self):
         self.df_limit = None
         self.df_raw = None
         self.phases = None
 
-    import pandas as pd
+    def get_step_limit_df(self, limit_config, cols_fr):
+        """
+        Tạo df_limit theo logic bậc thang.
+        Tần số ngoài dải [min_chốt, max_chốt] sẽ trả về NA.
+        """
+        all_phase_limits = []
+        
+        for phase_name, spec in limit_config.items():
+            phase_specific_cols = [c for c in cols_fr if c.startswith(f"{phase_name}_")]
+            if not phase_specific_cols:
+                continue
+                
+            actual_freqs = sorted([float(c.split('_')[-1]) for c in phase_specific_cols])
+            df_full = pd.DataFrame({'freq': actual_freqs}).astype('float64')
 
-class AudioAnalysis:
-    def __init__(self):
-        self.df_limit = None
-        self.df_raw = None
-        self.phases = None
+            # Tạo DF chốt điểm từ YAML
+            df_points = pd.DataFrame({
+                'freq': spec['freq'],
+                'high_limit': spec['usl'],
+                'low_limit': spec['lsl']
+            }).astype({'freq': 'float64'}).sort_values('freq')
 
-    def correlation(self, dataFrame_limit, dataFrame_raw):
+            # Xác định chốt điểm cuối cùng
+            max_spec_freq = df_points['freq'].max()
+            min_spec_freq = df_points['freq'].min()
+
+            # Merge logic bậc thang
+            df_merged = pd.merge_asof(
+                df_full, 
+                df_points, 
+                on='freq', 
+                direction='backward'
+            )
+            
+            # CHỈ ffill cho những điểm nằm trong dải [min_spec, max_spec]
+            # Những điểm > max_spec_freq sẽ bị set về NaN
+            df_merged.loc[df_merged['freq'] > max_spec_freq, ['high_limit', 'low_limit']] = np.nan
+            # Những điểm < min_spec_freq cũng sẽ tự động là NaN do direction='backward'
+            
+            # Thêm cột phase
+            df_merged.insert(0, 'phase', phase_name)
+            all_phase_limits.append(df_merged)
+                
+        if not all_phase_limits:
+            return pd.DataFrame(columns=['phase', 'freq', 'low_limit', 'high_limit'])
+            
+        return pd.concat(all_phase_limits, ignore_index=True)
+
+    def correlation(self, dataFrame_limit, dataFrame_raw, limit_correl_config=None):
         self.df_limit = dataFrame_limit
         self.df_raw = dataFrame_raw
-        
-        # 1. Lấy danh sách các phase (ví dụ: ['mic-1_fr', 'mic-2_fr'])
         self.phases = self.df_limit['phase'].unique().tolist()
         
-        # 2. Lọc cột theo khớp tuyệt đối phần đầu (Prefix)
-        # Chúng ta kiểm tra nếu cột bắt đầu bằng "phase" + "_" và ký tự tiếp theo là số
+        # Lọc danh sách cột tần số giữ nguyên thứ tự df_raw
         cols_fr = []
         for c in self.df_raw.columns:
             for p in self.phases:
-                # Kiểm tra: Cột phải bắt đầu bằng phase + "_"
                 if c.startswith(f"{p}_"):
-                    # Lấy phần còn lại sau phase + "_"
                     remainder = c[len(p)+1:]
-                    # Nếu phần còn lại bắt đầu bằng số (ví dụ: 00100.0) thì mới lấy
                     if remainder and remainder[0].isdigit():
                         cols_fr.append(c)
                         break
         
         if not cols_fr:
-            print("Cảnh báo: Không tìm thấy cột nào khớp tuyệt đối với định dạng.")
-            return None, None
+            print("Cảnh báo: Không tìm thấy cột tần số khớp định dạng.")
+            return None, None, None
 
-        # 3. Chuẩn bị dữ liệu số và loại bỏ phân mảnh
         df_numeric = self.df_raw[cols_fr].apply(pd.to_numeric, errors="coerce")
         station_ids = self.df_raw['station_id']
 
-        # 4. Tính Trung bình Tổng (Global Average)
+        # 1. Average Group
+        avg_group_df = df_numeric.copy()
+        avg_group_df['station_id'] = station_ids
+        avg_group_df = avg_group_df.groupby('station_id', as_index=False).mean()
+
+        # 2. Gap Group
         avg_total_series = df_numeric.mean()
-        avg_total_df = avg_total_series.to_frame().T
-        avg_total_df.insert(0, 'station_id', 'TOTAL_AVG')
+        gap_vals = avg_group_df[cols_fr].sub(avg_total_series, axis=1)
+        gap_group_df = pd.concat([avg_group_df[['station_id']], gap_vals], axis=1).copy()
 
-        # 5. Tính Trung bình theo từng Nhóm (Group Average)
-        df_for_group = df_numeric.copy()
-        df_for_group['station_id'] = station_ids
-        avg_group_df = df_for_group.groupby('station_id', as_index=False).mean()
+        # 3. Tạo df_limit_correl dạng dọc với logic NA ngoài dải chốt
+        df_limit_correl = None
+        if limit_correl_config is not None:
+            df_limit_correl = self.get_step_limit_df(limit_correl_config, cols_fr)
 
-        # 6. Tạo DataFrame 1: Summary (Gồm Total và Group Avg)
-        summary_df = pd.concat([avg_total_df, avg_group_df], ignore_index=True).copy()
+        return avg_group_df, gap_group_df, df_limit_correl
 
-        # 7. Tạo DataFrame 2: Gap (Group Avg - Total Avg)
-        group_vals = avg_group_df[cols_fr]
-        gap_vals = group_vals.sub(avg_total_series, axis=1)
-        gap_df = pd.concat([avg_group_df[['station_id']], gap_vals], axis=1).copy()
-
-        return average_df, gap_df
-
-# --- Cách sử dụng ---
-# analyzer = AudioAnalysis()
-# df_summary, df_gap = analyzer.correlation(df_limit, df_raw)
-#
-# print("--- BẢNG GIÁ TRỊ TRUNG BÌNH ---")
-# print(df_summary.head())
-#
-# print("\n--- BẢNG KHOẢNG CÁCH (GAP) ---")
-# print(df_gap.head())
 if __name__ == "__main__":
-    path="C:/Users/nguye/Desktop/AudioForBeginner/raw_log_4cs4"
+    path="C:/Users/V1531673/Desktop/AudioForBeginner/raw_log_4cs4"
     df_limit,df_data=parser.summary_data(path,mode="audio_full")
-    correl=AudioAnalysis()
-    df_correl,df_gap=correl.correlation(df_limit,df_data)
+    correl=AudioCorrelation()
+    df_correl,df_gap,df_limit_correl=correl.correlation(df_limit,df_data,limit_correl_config=config["limit_correl"])
     df_gap.to_csv("gap.csv")
     df_correl.to_csv("correl.csv")
+    df_limit_correl.to_csv("limit_correl.csv")
 
 
 

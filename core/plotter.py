@@ -21,9 +21,9 @@ class DrawChart(object):
     def __init__(self):
         self.config=load_yaml()
 
-    def maker_graph(self,df_limit_by_phase,groups,phase,mode="defaut"):
+    def maker_graph(self,df_limit_by_phase,groups,phase,mode="defaut",title=""):
         self.phase=phase
-        
+        self.title=title
         self.min_freq=df_limit_by_phase["freq"].min()
         #self.max_freq=df_limit_by_phase["freq"].max()
         ##
@@ -34,21 +34,33 @@ class DrawChart(object):
         self.freq_limit=df_limit_by_phase["freq"]
         self.usl=df_limit_by_phase['high_limit']
         self.lsl=df_limit_by_phase['low_limit']
-        
-        
-        #config plot 
-        self.y_min=self.config["plot_config"][phase]["min"]
-        self.y_max=self.config["plot_config"][phase]["max"]
-        self.y_step=self.config["plot_config"][phase]["step"]
-        if "fr_norm" or "seal_chirp" in phase:
-            self.y_extend=self.y_step
-        else:
-            self.y_extend=self.y_step/2
-       
         self.freq_data=df_limit_by_phase["freq"]
         self.max_freq=df_limit_by_phase["freq"].max()
 
-        fig=self.__draw(groups=groups)
+        if mode == "default":
+            #config plot 
+            self.y_min=self.config["plot_config"][phase]["min"]
+            self.y_max=self.config["plot_config"][phase]["max"]
+            self.y_step=self.config["plot_config"][phase]["step"]
+            
+            if "fr_norm" or "seal_chirp" in phase:
+                self.y_extend=self.y_step
+            else:
+                self.y_extend=self.y_step/2
+        
+           
+        elif mode == "correlation":
+            self.y_extend=0
+            self.y_min=self.config["plot_config_correlation"][phase]["min"]
+            self.y_max=self.config["plot_config_correlation"][phase]["max"]
+            self.y_step=self.config["plot_config_correlation"][phase]["step"]
+            self.title=" -  correlation"
+            if "fr_norm" or "seal_chirp" in phase:
+                self.y_extend=self.y_step
+            else:
+                self.y_extend=self.y_step/2
+        fig=self.__draw(groups=groups)    
+            
         return fig
 
         
@@ -64,7 +76,7 @@ class DrawChart(object):
         ax.set_ylim(self.y_min - self.y_extend, self.y_max + self.y_extend)
         ax.set_yticks(np.arange(self.y_min, self.y_max + self.y_extend, self.y_step))
 
-        fig.suptitle(self.phase)
+        fig.suptitle(f"{self.phase} {self.title}")
 
         ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5, label="high_limit")
         ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5, label="low_limit")

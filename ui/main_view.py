@@ -17,15 +17,18 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from tksheet import Sheet
 
+from core.correlation import AudioCorrelation
+from core.load_config import load_yaml
 from core.logger import setup_logging
 from core.parser import ParserLog
 from core.plotter import DrawChart
 
+config=load_yaml()
 TITLE_FONT=("Calibri",22,'bold')
 CONTENT_FONT=("Calibri",18,'bold')
 LABLE_FONT=("Calibri",14,'bold')
 BG_COLOR="#00A2E8"
-
+correl=AudioCorrelation()
 process_data=ParserLog()
 plotter=DrawChart()
 logger=setup_logging()
@@ -177,7 +180,7 @@ class _HomeTabView(ctk.CTkFrame):
         self.btn_chef=ctk.CTkButton(self.masterchef_frame,text="Nấu Ăn",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.chef())
         self.btn_chef.grid(row=0,column=0)
     def refresh(self):
-        pass
+        messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
     def export_csv(self):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
         self.df_data_raw.to_csv(path,index=False)  
@@ -241,12 +244,24 @@ class _HomeTabView(ctk.CTkFrame):
             self.grr()
 
     def dut_compare(self):
-        self.graph.show_graph(limit_df=self.df_limit_raw,data_df=self.df_data_raw,drawBy=self.draw_by)
+        self.graph.show_graph(limit_df=self.df_limit_raw,
+                              data_df=self.df_data_raw,
+                              drawBy=self.draw_by,
+                              mode="dut_compare")
         self.table.make_table(self.df_data_raw)
     def correlation(self):
-        pass
+        self.avg_df,self.gap_df,self.gap_limit_df = correl.correlation(dataFrame_limit=self.df_limit_raw,
+                                                                       dataFrame_raw=self.df_data_raw,
+                                                                       limit_correl_config=config["limit_correl"])
+        self.graph.show_graph(limit_df=self.df_limit_raw,
+                              correl_limit_df=self.gap_limit_df,
+                              data_df=self.avg_df,
+                              correl_df=self.gap_df,
+                              draw_by="station_id",
+                              mode="correlation")
+        self.table.make_table(self.df_data_raw)
     def grr(self):
-        pass
+        messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
 
     def select_file_or_dir(self):
         if self.check_from_dir.get()==1:
@@ -315,7 +330,7 @@ class _HomeTabView(ctk.CTkFrame):
             pass
 
     def search(self):
-        pass
+        messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
 
 class _ToolTabView(ctk.CTkFrame):
     def __init__(self, master):
@@ -364,39 +379,62 @@ class _GraphTab(ctk.CTkFrame):
 
     def show_img(self):
         fig, ax = plt.subplots()
-        img = mpimg.imread("image.png")
+        img = mpimg.imread("core/image.png")
         ax.imshow(img)
         ax.axis("off")
         self.pack_grarh(fig=fig)
       
-    def show_graph(self, limit_df, data_df,drawBy):
+    def show_graph(self, limit_df, data_df,draw_by,correl_limit_df=None,correl_df=None,mode="dut_compare"):
         self.clear_inner()
-        self.drawBy=drawBy
-        t = threading.Thread(
-            target=self._process_and_plot,
-            args=(limit_df, data_df),
-            daemon=True
-        )
-        t.start()
+        self.draw_by=draw_by
+        self.limit_df=limit_df
+        self.data_df=data_df
+        self.correl_limit=correl_limit_df
+        self.correl_data_df=correl_df
+        self.mode=mode
+
+        self._process_and_plot()
         #logger.info("Completed Analysis")
     
-    def _process_and_plot(self, limit_df, data_df):
-        phases = limit_df["phase"].unique()
-
+    def _process_and_plot(self):
         figures = []
+        if self.mode == "dut_compare":
+            phases = self.limit_df["phase"].unique()
+            for phase in phases:
+                df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
+                limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
+                groups_data=process_data.group_data(df_phase_filter,groupBy=self.draw_by)
+                fig = plotter.maker_graph(
+                    df_limit_by_phase=limit_df_by_phase,
+                    groups=groups_data,  # gui vao dataframe dang long
+                    phase=phase,
+                    mode="default")
+                figures.append(fig)
+        elif self.mode == "correlation":
+            self.draw_by = "station_id"
+            # Lấy danh sách phase từ bảng limit correlation
+            phases = self.limit_df["phase"].unique()
+            for phase in phases:
+                df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
+                limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
+                groups_data=process_data.group_data(df_phase_filter,groupBy=self.draw_by)
+                fig = plotter.maker_graph(
+                    df_limit_by_phase=limit_df_by_phase,
+                    groups=groups_data,  # gui vao dataframe dang long
+                    phase=phase,
+                    mode="default",
+                    title=" - average")
+                figures.append(fig)
 
-        # VẼ → TUẦN TỰ (NHANH HƠN + AN TOÀN)
-        for phase in phases:
-            df_phase_filter=data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.drawBy)})$").copy()
-            limit_df_by_phase=limit_df[limit_df["phase"]==phase].copy()
-            groups_data=process_data.group_data(df_phase_filter,groupBy=self.drawBy)
-            fig = plotter.maker_graph(
-                df_limit_by_phase=limit_df_by_phase,
-                groups=groups_data,  # gui vao dataframe dang long
-                phase=phase,
-                
-            )
-            figures.append(fig)
+                df_phase_correl_filter=self.correl_data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
+                df_phase_correl_limit=self.correl_limit[self.correl_limit["phase"]==phase].copy()
+                groups_data_correl=process_data.group_data(df_phase_correl_filter,groupBy=self.draw_by)
+                fig_correl = plotter.maker_graph(
+                    df_limit_by_phase=df_phase_correl_limit,
+                    groups=groups_data_correl,  # gui vao dataframe dang long
+                    phase=phase,
+                    mode="correlation")
+                figures.append(fig_correl)
 
         self.after(0, lambda: self._render_figures(figures))
 
