@@ -1,20 +1,14 @@
 import os
 import re
-import threading
 import tkinter as tk
-from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Pool
 from pathlib import Path
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from CTkTable import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 from tksheet import Sheet
 
 from core.correlation import AudioCorrelation
@@ -246,7 +240,7 @@ class _HomeTabView(ctk.CTkFrame):
     def dut_compare(self):
         self.graph.show_graph(limit_df=self.df_limit_raw,
                               data_df=self.df_data_raw,
-                              drawBy=self.draw_by,
+                              draw_by=self.draw_by,
                               mode="dut_compare")
         self.table.make_table(self.df_data_raw)
     def correlation(self):

@@ -1,12 +1,9 @@
 
-import json
-import os
 from itertools import cycle
 
 import matplotlib
 import numpy as np
 import pandas as pd
-import yaml
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 

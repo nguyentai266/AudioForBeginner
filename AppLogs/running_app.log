@@ -1,0 +1,45 @@
+2026-02-10 18:08:36 [INFO] - Start Application
+2026-02-10 18:08:49 [INFO] - Start analysis
+2026-02-10 18:08:49 [INFO] - Draw by station_id
+2026-02-10 18:08:49 [INFO] - run mode dut compare
+2026-02-10 18:08:52 [INFO] - Start analysis
+2026-02-10 18:08:52 [INFO] - Draw by station_id
+2026-02-10 18:08:53 [INFO] - run mode dut compare
+2026-02-10 18:09:06 [INFO] - Start analysis
+2026-02-10 18:09:06 [INFO] - Draw by station_id
+2026-02-10 18:09:07 [INFO] - run mode correlation
+2026-02-10 18:09:13 [INFO] - Completed Analyze
+2026-02-10 18:11:03 [INFO] - Start Application
+2026-02-10 18:11:17 [INFO] - Start analysis
+2026-02-10 18:11:18 [INFO] - Draw by station_id
+2026-02-10 18:11:18 [INFO] - run mode dut compare
+2026-02-10 18:11:22 [INFO] - Completed Analyze
+2026-02-10 18:11:35 [INFO] - Start analysis
+2026-02-10 18:11:35 [INFO] - Draw by dut_id
+2026-02-10 18:11:36 [INFO] - run mode dut compare
+2026-02-10 18:11:39 [INFO] - Completed Analyze
+2026-02-10 18:11:46 [INFO] - Start analysis
+2026-02-10 18:11:46 [INFO] - Draw by station_id
+2026-02-10 18:11:47 [INFO] - run mode correlation
+2026-02-10 18:11:52 [INFO] - Completed Analyze
+2026-02-10 18:12:02 [INFO] - Start analysis
+2026-02-10 18:12:02 [INFO] - Draw by dut_id
+2026-02-10 18:12:02 [INFO] - run mode correlation
+2026-02-10 18:12:09 [INFO] - Completed Analyze
+2026-02-10 18:12:50 [INFO] - Start Application
+2026-02-10 18:13:03 [INFO] - Start analysis
+2026-02-10 18:13:03 [INFO] - Draw by station_id
+2026-02-10 18:13:04 [INFO] - run mode dut compare
+2026-02-10 18:13:07 [INFO] - Completed Analyze
+2026-02-10 18:13:20 [INFO] - Start Application
+2026-02-10 18:13:39 [INFO] - Start analysis
+2026-02-10 18:13:39 [INFO] - Draw by station_id
+2026-02-10 18:13:39 [INFO] - run mode dut compare
+2026-02-10 18:13:43 [INFO] - Completed Analyze
+2026-02-10 18:13:50 [INFO] - Start analysis
+2026-02-10 18:13:50 [INFO] - Draw by station_id
+2026-02-10 18:13:50 [INFO] - run mode correlation
+2026-02-10 18:13:56 [INFO] - Completed Analyze
+2026-02-10 18:14:23 [INFO] - Start analysis
+2026-02-10 18:14:23 [INFO] - Draw by station_id
+2026-02-10 18:14:24 [INFO] - run mode GRR
