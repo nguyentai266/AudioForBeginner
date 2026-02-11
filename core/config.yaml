@@ -35,9 +35,9 @@ plot_config:
   mic-2_fr: {min: -60, max: 0, step: 10}
   mic-3_fr: {min: -50, max: 0, step: 5}
 
-  mic-1_fr_norm: {min: 0, max: 15, step: 5}
-  mic-2_fr_norm: {min: -15, max: 10, step: 5}
-  mic-3_fr_norm: {min: 0, max: 15, step: 5}
+  mic-1_fr_norm: {min: -10, max: 10, step: 5}
+  mic-2_fr_norm: {min: -10, max: 10, step: 5}
+  mic-3_fr_norm: {min: -10, max: 10, step: 5}
 
   mic-1_thd: {min: 0, max: 4, step: 0.5}
   mic-2_thd: {min: 0, max: 4, step: 1}
@@ -65,20 +65,20 @@ plot_config_correlation:
   mic-2_fr: {min: -3, max: 3, step: 1}
   mic-3_fr: {min: -3, max: 3, step: 1}
 
-  mic-1_fr_norm: {min: -3, max: 3, step: 1}
+  mic-1_fr_norm: {min: -2, max: 2, step: 1}
   mic-2_fr_norm: {min: -3, max: 3, step: 1}
   mic-3_fr_norm: {min: -3, max: 3, step: 1}
 
-  mic-1_thd: {min: -2, max: 2, step: 1}
-  mic-2_thd: {min: -3, max: 3, step: 1}
-  mic-3_thd: {min: -3, max: 3, step: 1}
+  mic-1_thd: {min: -0.6, max: 0.6, step: 0.2}
+  mic-2_thd: {min: -0.6, max: 0.6, step: 0.2}
+  mic-3_thd: {min: -0.6, max: 0.6, step: 0.2}
 
-  mic-1_seal_chirp: {min: -30, max: 30, step: 10}
-  mic-2_seal_chirp: {min: -30, max: 30, step: 10}
-  mic-3_seal_chirp: {min: -30, max: 30, step: 10}
+  mic-1_seal_chirp: {min: -7.5, max: 10, step: 2.5}
+  mic-2_seal_chirp: {min: -7.5, max: 10, step: 2.5}
+  mic-3_seal_chirp: {min: -7.5, max: 10, step: 2.5}
 
-  hac-1_thdn: {min: -3, max: 3, step: 1}
-  hac-1_fr: {min: -3, max: 3, step: 1}
+  hac-1_thdn: {min: -1, max: 1, step: 0.25}
+  hac-1_fr: {min: -1, max: 1, step: 0.25}
 
 limit_correl:
   mic-1_fr:

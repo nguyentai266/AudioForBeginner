@@ -51,11 +51,12 @@ class DrawChart(object):
             self.y_min=self.config["plot_config_correlation"][phase]["min"]
             self.y_max=self.config["plot_config_correlation"][phase]["max"]
             self.y_step=self.config["plot_config_correlation"][phase]["step"]
-            self.title=" -  correlation"
+            self.title="- Correlation"
             if "fr_norm" or "seal_chirp" in phase:
                 self.y_extend=self.y_step
             else:
                 self.y_extend=self.y_step/2
+
         fig=self.__draw(groups=groups)    
             
         return fig
@@ -69,14 +70,14 @@ class DrawChart(object):
         fig.patch.set_facecolor("#e6e6e6")
         ax = fig.add_subplot(111)
 
-        ax.set_xlim(self.min_freq, self.max_freq)
+        ax.set_xlim(self.min_freq-(self.min_freq/5), self.max_freq+(self.max_freq/2))
         ax.set_ylim(self.y_min - self.y_extend, self.y_max + self.y_extend)
         ax.set_yticks(np.arange(self.y_min, self.y_max + self.y_extend, self.y_step))
 
         fig.suptitle(f"{self.phase} {self.title}")
 
-        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5, label="high_limit")
-        ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5, label="low_limit")
+        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5)
+        ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5)
 
         color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
         color_map = {}   # key -> color

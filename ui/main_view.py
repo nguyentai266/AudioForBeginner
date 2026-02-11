@@ -8,6 +8,7 @@ import customtkinter as ctk
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tksheet import Sheet
 
@@ -128,7 +129,7 @@ class _HomeTabView(ctk.CTkFrame):
         self.sideBarFrame=ctk.CTkFrame(master,fg_color=BG_COLOR)
         self.sideBarFrame.pack(fill='both',expand=True)
         self.sideBarFrame.columnconfigure(1,weight=1)
-        self.sideBarFrame.rowconfigure(19,weight=1)
+        self.sideBarFrame.rowconfigure(20,weight=1)
 
         ctk.CTkLabel(self.sideBarFrame, text="Menu", font=TITLE_FONT,fg_color=BG_COLOR,).grid(row=0,column=0,columnspan=3,sticky="",pady=5)
         ctk.CTkLabel(self.sideBarFrame,text="From",font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=1,column=0,columnspan=3,pady=5,sticky='w')
@@ -163,8 +164,10 @@ class _HomeTabView(ctk.CTkFrame):
         self.btn_refresh=ctk.CTkButton(self.sideBarFrame,text="Refresh",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.refresh())
         self.btn_refresh.grid(row=16,column=0,columnspan=3,sticky="",pady=10)
 
-        self.btn_export_csv=ctk.CTkButton(self.sideBarFrame,text="Export",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.export_csv())
+        self.btn_export_csv=ctk.CTkButton(self.sideBarFrame,text="Export CSV",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.export_csv())
         self.btn_export_csv.grid(row=17,column=0,columnspan=3,sticky="",pady=10)
+        self.btn_export_pdf=ctk.CTkButton(self.sideBarFrame,text="Export PDF",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.export_pdf())
+        self.btn_export_pdf.grid(row=18,column=0,columnspan=3,sticky="",pady=10)
 
 
 
@@ -179,6 +182,10 @@ class _HomeTabView(ctk.CTkFrame):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
         self.df_data_raw.to_csv(path,index=False)  
         messagebox.showinfo(title="Notice",message=f"Export CSV file complete.")
+    def export_pdf(self):
+        path=filedialog.asksaveasfilename(title="Summary PDF Data",defaultextension=".pdf",filetypes=[("PDF files", "*.pdf")])
+        self.graph.export_pdf(path)
+        messagebox.showinfo(title="Notice",message=f"Export PDF file complete.")
 
     def chef(self):
         summary_file=filedialog.askopenfilename(title="Select csv summary file",filetypes=[("CSV files", "*.csv")])
@@ -310,16 +317,16 @@ class _HomeTabView(ctk.CTkFrame):
     def masterchef(self,event=None):
         if self.entry_input.get() == "bat che do nau an":
             self.check_masterchef_mode.set(value=1)
-            self.masterchef_frame.grid(column=0,columnspan=3,row=18,pady=10)
+            self.masterchef_frame.grid(column=0,columnspan=3,row=19,pady=10)
             self.label_notice.configure(text="CHẾ ĐỘ NẤU ĂN")
             messagebox.showwarning(title="Dangerous",message="Đã bật chức năng nấu ăn")
-            print("Now you are master chef")
+            logger.info("Now you are master chef")
         if self.entry_input.get() == "tat che do nau an":
             self.check_masterchef_mode.set(value=0)
             self.masterchef_frame.grid_forget()
             self.label_notice.configure(text="CÓ LÀM THÌ MỚI CÓ ĂN")
             messagebox.showinfo(title="Notice",message="Đã tắt chức năng nấu ăn")
-            print("Now you are normal person")
+            logger.info("Now you are normal person")
         else:
             pass
 
@@ -337,7 +344,7 @@ class _GraphTab(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         
-
+        self.figures=[]
         container=ctk.CTkFrame(self)
         container.pack(fill="both",expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -391,7 +398,7 @@ class _GraphTab(ctk.CTkFrame):
         #logger.info("Completed Analysis")
     
     def _process_and_plot(self):
-        figures = []
+        
         if self.mode == "dut_compare":
             phases = self.limit_df["phase"].unique()
             for phase in phases:
@@ -403,7 +410,7 @@ class _GraphTab(ctk.CTkFrame):
                     groups=groups_data,  # gui vao dataframe dang long
                     phase=phase,
                     mode="default")
-                figures.append(fig)
+                self.figures.append(fig)
         elif self.mode == "correlation":
             self.draw_by = "station_id"
             # Lấy danh sách phase từ bảng limit correlation
@@ -418,8 +425,8 @@ class _GraphTab(ctk.CTkFrame):
                     phase=phase,
                     mode="default",
                     title=" - average")
-                figures.append(fig)
-
+                self.figures.append(fig)
+                
                 df_phase_correl_filter=self.correl_data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 df_phase_correl_limit=self.correl_limit[self.correl_limit["phase"]==phase].copy()
                 groups_data_correl=process_data.group_data(df_phase_correl_filter,groupBy=self.draw_by)
@@ -428,9 +435,9 @@ class _GraphTab(ctk.CTkFrame):
                     groups=groups_data_correl,  # gui vao dataframe dang long
                     phase=phase,
                     mode="correlation")
-                figures.append(fig_correl)
+                self.figures.append(fig_correl)
 
-        self.after(0, lambda: self._render_figures(figures))
+        self.after(0, lambda: self._render_figures(self.figures))
 
 
     def _render_figures(self, figures):
@@ -458,6 +465,7 @@ class _GraphTab(ctk.CTkFrame):
     def clear_inner(self):
         for widget in self.inner.winfo_children():
             widget.destroy()
+        self.figures=[]
     # ---------------------------
     def _update_scrollregion(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -468,7 +476,16 @@ class _GraphTab(ctk.CTkFrame):
     def _on_mousewheel(self, event):
         self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-
+    def export_pdf(self,path):
+        if not self.figures:
+            messagebox.showerror(title="Error",message="No data for export pdf.")
+        else:
+            with PdfPages(path) as pdf:
+                for fig in self.figures:
+                    pdf.savefig(fig,bbox_inches='tight')
+            logger.info("Export PDF completed")
+    
+        
 
     
 
