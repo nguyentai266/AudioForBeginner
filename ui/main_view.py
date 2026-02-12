@@ -509,6 +509,7 @@ class _TableTab(ctk.CTkFrame):
         self.sheet.headers(self.df_data.columns.tolist())
         self.sheet.set_sheet_data(data_sheet)
         self.sheet.refresh()
+    
 
 
         
