@@ -76,7 +76,7 @@ class DrawChart(object):
 
         fig.suptitle(f"{self.phase} {self.title}")
 
-        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5)
+        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5,label="limit")
         ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5)
 
         color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])

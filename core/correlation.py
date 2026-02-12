@@ -9,7 +9,6 @@ config=load_yaml()
 logger=setup_logging()
 
 import numpy as np
-import pandas as pd
 
 
 class AudioCorrelation:

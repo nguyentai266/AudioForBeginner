@@ -1,5 +1,6 @@
 import os
 import re
+import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -24,7 +25,7 @@ CONTENT_FONT=("Calibri",18,'bold')
 LABLE_FONT=("Calibri",14,'bold')
 BG_COLOR="#00A2E8"
 correl=AudioCorrelation()
-process_data=ParserLog()
+parser=ParserLog()
 plotter=DrawChart()
 logger=setup_logging()
 class MainView(ctk.CTkFrame):
@@ -78,37 +79,37 @@ class _HomeTabView(ctk.CTkFrame):
 
         self.df_limit_correlation=None
         self.df_data_correlation=None
-        
 
+        self.index_sorted=None
+        self.can_refresh=False
     def _content_view(self,master):
         search_frame=ctk.CTkFrame(master,fg_color=BG_COLOR)
         search_frame.pack(padx=0,pady=0,fill="both")
-        search_frame.grid_columnconfigure(8,weight=1)
+        search_frame.grid_columnconfigure(1,weight=1)
         search_frame.grid_rowconfigure(0,weight=1)
-        combo_width=250
-        btn_width=100
+        combo_width=280
+        btn_width=250
         combo_color_text="#FFFFFF"
         self.label_notice=ctk.CTkLabel(search_frame, text="CÓ LÀM THÌ MỚI CÓ ĂN",anchor="center",font=TITLE_FONT,text_color="#FFFFFF")
         self.label_notice.grid(row=0,column=1,columnspan=8,sticky="ew")
         #search_UI
-        ctk.CTkLabel(search_frame,text="Station",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=0,sticky="nsew",padx=10,pady=10)
-        self.CBBstation=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_station)
+        ctk.CTkLabel(search_frame,text="Station ID",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=0,sticky="nsew",padx=10,pady=10)
+        self.CBBstation=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_station,font=CONTENT_FONT)
         self.CBBstation.grid(row=1,column=1,sticky="nsew",pady=10)
 
-        ctk.CTkLabel(search_frame,text="Dut SN",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=2,sticky="nsew",padx=10,pady=10)
-        self.CBBdut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_dut,)
+        ctk.CTkLabel(search_frame,text="Device SN",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=2,sticky="nsew",padx=10,pady=10)
+        self.CBBdut_id=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_dut,font=CONTENT_FONT)
         self.CBBdut_id.grid(row=1,column=3,sticky="nsew",pady=10)
 
-        ctk.CTkLabel(search_frame,text="Phase",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=4,sticky="nsew",padx=10,pady=10)
-        self.CBBphase=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_phase,)
+        ctk.CTkLabel(search_frame,text="Phase Selected",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=4,sticky="nsew",padx=10,pady=10)
+        self.CBBphase=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_phase,font=CONTENT_FONT)
         self.CBBphase.grid(row=1,column=5,sticky="nsew",pady=10)
 
-        ctk.CTkLabel(search_frame,text="Frequency",font=CONTENT_FONT,text_color=combo_color_text).grid(row=1,column=6,sticky="nsew",padx=10,pady=10)
-        self.CBBfrequency=ctk.CTkComboBox(search_frame,width=combo_width,height=30,values=self.list_freq,)
-        self.CBBfrequency.grid(row=1,column=7,sticky="nsew",pady=10)
+        
+        
 
         self.search_btn=ctk.CTkButton(search_frame,width=btn_width,text="Search",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=self.search,)
-        self.search_btn.grid(row=1,column=8,sticky="nsew",padx=10,pady=10)
+        self.search_btn.grid(row=1,column=6,sticky="nsew",padx=10,pady=10)
 
         tabview=ctk.CTkTabview(master,anchor="nw",fg_color=BG_COLOR,text_color="black",text_color_disabled="black")
         tabview.pack(fill='both',expand=True)
@@ -176,8 +177,20 @@ class _HomeTabView(ctk.CTkFrame):
         self.masterchef_frame.grid_forget()
         self.btn_chef=ctk.CTkButton(self.masterchef_frame,text="Nấu Ăn",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.chef())
         self.btn_chef.grid(row=0,column=0)
+
     def refresh(self):
-        messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
+        if self.can_refresh == True:
+
+            self.df_sorted=self.table.get_data_from_sheet()
+
+            self.df_sorted.index = self.index_sorted
+            self.df_data_raw.update(self.df_sorted)
+            self.table.make_table(self.df_data_raw)
+            self.logic_running_analysis()
+        else:
+            return
+        #messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
+
     def export_csv(self):
         path=filedialog.asksaveasfilename(title="Summary csv data",defaultextension=".csv",filetypes=[("CSV files", "*.csv")])
         self.df_data_raw.to_csv(path,index=False)  
@@ -190,7 +203,7 @@ class _HomeTabView(ctk.CTkFrame):
     def chef(self):
         summary_file=filedialog.askopenfilename(title="Select csv summary file",filetypes=[("CSV files", "*.csv")])
         output_folder=filedialog.askdirectory(title="Select output log folder",initialdir="/")
-        process_data.update_log_files_by_row(summary_file,output_folder)
+        parser.update_log_files_by_row(summary_file,output_folder)
         messagebox.showwarning(title="Warning",message="Đã nấu xong món")
         
         
@@ -209,7 +222,7 @@ class _HomeTabView(ctk.CTkFrame):
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":     
             if Path(path).is_dir():
-                self.df_limit_raw,self.df_data_raw=process_data.summary_data(path,mode="audio_full")
+                self.df_limit_raw,self.df_data_raw=parser.summary_data(path,mode="audio_full")
                 self.df_limit_raw.to_csv("limit.csv",index=False)
                 
             if Path(path).is_file():
@@ -228,20 +241,24 @@ class _HomeTabView(ctk.CTkFrame):
             
             self.list_phase=self.df_limit_raw["phase"].unique().tolist()
             self.CBBphase.configure(values=self.list_phase)
-            self.list_freq=self.df_limit_raw['freq'].astype("str").unique().tolist()
-            self.CBBfrequency.configure(values=self.list_freq)
+            #self.list_freq=self.df_limit_raw['freq'].astype("str").unique().tolist()
+            #self.CBBfrequency.configure(values=self.list_freq)
 
             self.logic_running_analysis()
 
     def logic_running_analysis(self):
         if self.check_dut_compare.get() == 1 :
-            logger.info("run mode dut compare")
-            self.dut_compare()
+            logger.info("Run mode compare")
+            t=threading.Thread(target=self.dut_compare(),args="Dut compare")
+            t.start()
+            
         if self.check_correlation.get() == 1:
-            logger.info("run mode correlation")
-            self.correlation()
+            logger.info("Run mode correlation")
+            t=threading.Thread(target=self.correlation(),args="Correlation")
+            t.start()
+            
         if self.check_grr.get() == 1:
-            logger.info("run mode GRR")
+            logger.info("Run mode GRR")
             self.grr()
 
     def dut_compare(self):
@@ -331,7 +348,43 @@ class _HomeTabView(ctk.CTkFrame):
             pass
 
     def search(self):
-        messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
+        self.station=self.CBBstation.get()
+        self.dut_sn=self.CBBdut_id.get()
+        self.phase_selected=self.CBBphase.get()
+        df_phase_filter=self.df_data_raw.filter(regex=rf"^({re.escape(self.phase_selected)}_\d+(\.\d+)?|station_id|dut_id)$")
+        if not self.phase_selected:
+            self.can_refresh=False
+            return
+        else:
+            self.can_refresh=True
+            if self.station:
+                grouped=df_phase_filter.groupby('station_id')
+                for key,group in grouped:
+                    if key == self.station:
+                        self.index_sorted=group.index.to_list()
+                        self.table.make_table(group)
+            elif self.dut_sn:
+                grouped=df_phase_filter.groupby('dut_id')
+                for key,group in grouped:
+                    if key == self.dut_sn:
+                        self.index_sorted=group.index.to_list()
+                        self.table.make_table(group)
+            elif self.dut_sn and self.station:
+                grouped=df_phase_filter.groupby('dut_id')
+                for key,group in grouped:
+                    if key == self.dut_sn:
+                        groups2=group.groupby('station_id')
+                        for station,g in groups2:
+                            if station == self.station:
+                                self.index_sorted=g.index.to_list()
+                                self.table.make_table(g)
+
+            else:
+                self.index_sorted=df_phase_filter.index.to_list()
+                self.table.make_table(df_phase_filter)
+
+
+        #messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
 
 class _ToolTabView(ctk.CTkFrame):
     def __init__(self, master):
@@ -404,7 +457,7 @@ class _GraphTab(ctk.CTkFrame):
             for phase in phases:
                 df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
-                groups_data=process_data.group_data(df_phase_filter,groupBy=self.draw_by)
+                groups_data=parser.group_data(df_phase_filter,groupBy=self.draw_by)
                 fig = plotter.maker_graph(
                     df_limit_by_phase=limit_df_by_phase,
                     groups=groups_data,  # gui vao dataframe dang long
@@ -418,7 +471,7 @@ class _GraphTab(ctk.CTkFrame):
             for phase in phases:
                 df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
-                groups_data=process_data.group_data(df_phase_filter,groupBy=self.draw_by)
+                groups_data=parser.group_data(df_phase_filter,groupBy=self.draw_by)
                 fig = plotter.maker_graph(
                     df_limit_by_phase=limit_df_by_phase,
                     groups=groups_data,  # gui vao dataframe dang long
@@ -429,7 +482,7 @@ class _GraphTab(ctk.CTkFrame):
                 
                 df_phase_correl_filter=self.correl_data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 df_phase_correl_limit=self.correl_limit[self.correl_limit["phase"]==phase].copy()
-                groups_data_correl=process_data.group_data(df_phase_correl_filter,groupBy=self.draw_by)
+                groups_data_correl=parser.group_data(df_phase_correl_filter,groupBy=self.draw_by)
                 fig_correl = plotter.maker_graph(
                     df_limit_by_phase=df_phase_correl_limit,
                     groups=groups_data_correl,  # gui vao dataframe dang long
@@ -496,7 +549,7 @@ class _TableTab(ctk.CTkFrame):
         
         #df=pd.read_csv("C:/Users/V1531673/Desktop/CODE/Audio Basic/summary.csv")
         
-        self.parser=ParserLog()
+        
         self.sheet = Sheet(self,data=None,column_headers = None, row_index = None,header_bg = "#f8f9fa", index_bg = "#f8f9fa")
 
 
@@ -509,6 +562,12 @@ class _TableTab(ctk.CTkFrame):
         self.sheet.headers(self.df_data.columns.tolist())
         self.sheet.set_sheet_data(data_sheet)
         self.sheet.refresh()
+
+    def get_data_from_sheet(self):
+        headers=self.sheet.headers()
+        data=self.sheet.get_sheet_data()
+        df_edit=pd.DataFrame(data=data,columns=headers)
+        return df_edit
     
 
 

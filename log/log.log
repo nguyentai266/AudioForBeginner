@@ -1,0 +1,151 @@
+2026-02-12 10:50:50 [INFO] - Start Application
+2026-02-12 10:51:02 [INFO] - Start analysis
+2026-02-12 10:51:02 [INFO] - Draw by station_id
+2026-02-12 10:51:02 [INFO] - Run mode compare
+2026-02-12 10:51:04 [INFO] - Completed Analyze
+2026-02-12 10:52:23 [INFO] - Start analysis
+2026-02-12 10:52:23 [INFO] - Draw by station_id
+2026-02-12 10:52:23 [INFO] - Run mode correlation
+2026-02-12 10:52:28 [INFO] - Completed Analyze
+2026-02-12 10:55:08 [INFO] - Start Application
+2026-02-12 10:55:23 [INFO] - Start analysis
+2026-02-12 10:55:23 [INFO] - Draw by station_id
+2026-02-12 10:55:23 [INFO] - Run mode compare
+2026-02-12 10:55:26 [INFO] - Completed Analyze
+2026-02-12 11:00:17 [INFO] - Start Application
+2026-02-12 11:00:29 [INFO] - Start analysis
+2026-02-12 11:00:29 [INFO] - Draw by station_id
+2026-02-12 11:00:30 [INFO] - Run mode compare
+2026-02-12 11:00:32 [INFO] - Completed Analyze
+2026-02-12 11:01:18 [INFO] - Start analysis
+2026-02-12 11:01:18 [INFO] - Draw by dut_id
+2026-02-12 11:01:18 [INFO] - Run mode compare
+2026-02-12 11:01:20 [INFO] - Completed Analyze
+2026-02-12 11:01:47 [INFO] - Start analysis
+2026-02-12 11:01:47 [INFO] - Draw by dut_id
+2026-02-12 11:01:47 [INFO] - Run mode compare
+2026-02-12 11:01:49 [INFO] - Completed Analyze
+2026-02-12 11:03:31 [INFO] - Start analysis
+2026-02-12 11:03:31 [INFO] - Draw by dut_id
+2026-02-12 11:03:32 [INFO] - Run mode compare
+2026-02-12 11:03:34 [INFO] - Completed Analyze
+2026-02-12 11:10:58 [INFO] - Export PDF completed
+2026-02-12 11:12:10 [INFO] - Now you are master chef
+2026-02-12 13:12:12 [INFO] - Start Application
+2026-02-12 13:12:49 [INFO] - Start analysis
+2026-02-12 13:12:49 [INFO] - Draw by station_id
+2026-02-12 13:12:50 [INFO] - Run mode compare
+2026-02-12 13:12:54 [INFO] - Completed Analyze
+2026-02-12 13:54:49 [INFO] - Start Application
+2026-02-12 13:55:08 [INFO] - Start analysis
+2026-02-12 13:55:08 [INFO] - Draw by station_id
+2026-02-12 13:55:08 [INFO] - Run mode compare
+2026-02-12 13:55:13 [INFO] - Completed Analyze
+2026-02-12 14:00:33 [INFO] - Start Application
+2026-02-12 14:01:31 [INFO] - Start Application
+2026-02-12 14:02:18 [INFO] - Start Application
+2026-02-12 14:02:54 [INFO] - Start Application
+2026-02-12 14:03:16 [INFO] - Start Application
+2026-02-12 14:04:06 [INFO] - Start Application
+2026-02-12 14:04:53 [INFO] - Start Application
+2026-02-12 15:21:50 [INFO] - Start Application
+2026-02-12 15:21:59 [INFO] - Start analysis
+2026-02-12 15:21:59 [INFO] - Draw by station_id
+2026-02-12 15:23:48 [INFO] - Start Application
+2026-02-12 15:23:59 [INFO] - Start analysis
+2026-02-12 15:23:59 [INFO] - Draw by station_id
+2026-02-12 15:24:00 [INFO] - Run mode compare
+2026-02-12 15:24:02 [INFO] - Completed Analyze
+2026-02-12 15:25:49 [INFO] - Start Application
+2026-02-12 15:25:58 [INFO] - Start analysis
+2026-02-12 15:25:58 [INFO] - Draw by station_id
+2026-02-12 15:25:58 [INFO] - Run mode compare
+2026-02-12 15:26:01 [INFO] - Completed Analyze
+2026-02-12 15:26:57 [INFO] - Start Application
+2026-02-12 15:27:08 [INFO] - Start analysis
+2026-02-12 15:27:08 [INFO] - Draw by station_id
+2026-02-12 15:27:08 [INFO] - Run mode compare
+2026-02-12 15:27:11 [INFO] - Completed Analyze
+2026-02-12 15:52:53 [INFO] - Start Application
+2026-02-12 15:53:08 [INFO] - Start analysis
+2026-02-12 15:53:08 [INFO] - Draw by station_id
+2026-02-12 15:53:08 [INFO] - Run mode compare
+2026-02-12 15:53:11 [INFO] - Completed Analyze
+2026-02-12 15:56:03 [INFO] - Start Application
+2026-02-12 15:56:12 [INFO] - Start analysis
+2026-02-12 15:56:12 [INFO] - Draw by station_id
+2026-02-12 15:56:13 [INFO] - Run mode compare
+2026-02-12 15:56:15 [INFO] - Completed Analyze
+2026-02-12 15:59:21 [INFO] - Start analysis
+2026-02-12 15:59:21 [INFO] - Draw by station_id
+2026-02-12 15:59:21 [INFO] - Run mode correlation
+2026-02-12 15:59:26 [INFO] - Completed Analyze
+2026-02-12 16:06:42 [INFO] - Start Application
+2026-02-12 16:06:51 [INFO] - Start analysis
+2026-02-12 16:06:51 [INFO] - Draw by station_id
+2026-02-12 16:06:51 [INFO] - Run mode compare
+2026-02-12 16:06:54 [INFO] - Completed Analyze
+2026-02-12 16:07:39 [INFO] - Start Application
+2026-02-12 16:07:50 [INFO] - Start analysis
+2026-02-12 16:07:50 [INFO] - Draw by station_id
+2026-02-12 16:07:50 [INFO] - Run mode compare
+2026-02-12 16:07:53 [INFO] - Completed Analyze
+2026-02-12 16:08:48 [INFO] - Start Application
+2026-02-12 16:09:19 [INFO] - Start analysis
+2026-02-12 16:09:19 [INFO] - Draw by station_id
+2026-02-12 16:09:19 [INFO] - Run mode compare
+2026-02-12 16:09:22 [INFO] - Completed Analyze
+2026-02-12 16:11:51 [INFO] - Start Application
+2026-02-12 16:12:07 [INFO] - Start analysis
+2026-02-12 16:12:07 [INFO] - Draw by station_id
+2026-02-12 16:12:07 [INFO] - Run mode compare
+2026-02-12 16:12:10 [INFO] - Completed Analyze
+2026-02-12 16:16:26 [INFO] - Start Application
+2026-02-12 16:16:36 [INFO] - Start analysis
+2026-02-12 16:16:36 [INFO] - Draw by station_id
+2026-02-12 16:16:37 [INFO] - Run mode compare
+2026-02-12 16:16:39 [INFO] - Completed Analyze
+2026-02-12 16:18:53 [INFO] - Start Application
+2026-02-12 16:19:04 [INFO] - Start analysis
+2026-02-12 16:19:04 [INFO] - Draw by station_id
+2026-02-12 16:19:04 [INFO] - Run mode compare
+2026-02-12 16:19:06 [INFO] - Completed Analyze
+2026-02-12 16:19:36 [INFO] - Run mode compare
+2026-02-12 16:19:38 [INFO] - Completed Analyze
+2026-02-12 16:20:31 [INFO] - Start analysis
+2026-02-12 16:20:31 [INFO] - Draw by station_id
+2026-02-12 16:20:31 [INFO] - Run mode correlation
+2026-02-12 16:20:36 [INFO] - Completed Analyze
+2026-02-12 16:23:16 [INFO] - Start Application
+2026-02-12 16:23:46 [INFO] - Start Application
+2026-02-12 16:23:55 [INFO] - Start Application
+2026-02-12 16:24:12 [INFO] - Start analysis
+2026-02-12 16:24:12 [INFO] - Draw by station_id
+2026-02-12 16:24:12 [INFO] - Run mode compare
+2026-02-12 16:24:15 [INFO] - Completed Analyze
+2026-02-12 16:24:58 [INFO] - Start Application
+2026-02-12 16:26:08 [INFO] - Start Application
+2026-02-12 16:26:29 [INFO] - Start analysis
+2026-02-12 16:26:29 [INFO] - Draw by station_id
+2026-02-12 16:26:29 [INFO] - Run mode compare
+2026-02-12 16:26:31 [INFO] - Completed Analyze
+2026-02-12 16:26:55 [INFO] - Start Application
+2026-02-12 16:27:10 [INFO] - Start analysis
+2026-02-12 16:27:10 [INFO] - Draw by station_id
+2026-02-12 16:27:11 [INFO] - Run mode compare
+2026-02-12 16:27:13 [INFO] - Completed Analyze
+2026-02-12 16:27:36 [INFO] - Start Application
+2026-02-12 16:27:50 [INFO] - Start analysis
+2026-02-12 16:27:50 [INFO] - Draw by station_id
+2026-02-12 16:27:50 [INFO] - Run mode compare
+2026-02-12 16:27:53 [INFO] - Completed Analyze
+2026-02-12 16:35:20 [INFO] - Start Application
+2026-02-12 16:35:32 [INFO] - Start analysis
+2026-02-12 16:35:32 [INFO] - Draw by station_id
+2026-02-12 16:35:32 [INFO] - Run mode compare
+2026-02-12 16:35:35 [INFO] - Completed Analyze
+2026-02-12 16:37:07 [INFO] - Run mode compare
+2026-02-12 16:37:10 [INFO] - Completed Analyze
+2026-02-12 16:39:03 [INFO] - Run mode compare
+2026-02-12 16:39:05 [INFO] - Completed Analyze
+2026-02-12 16:39:45 [INFO] - Now you are master chef
