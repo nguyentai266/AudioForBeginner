@@ -477,7 +477,7 @@ class _GraphTab(ctk.CTkFrame):
                     groups=groups_data,  # gui vao dataframe dang long
                     phase=phase,
                     mode="default",
-                    title=" - average")
+                    title=" - Average")
                 self.figures.append(fig)
                 
                 df_phase_correl_filter=self.correl_data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()

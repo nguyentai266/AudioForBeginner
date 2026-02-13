@@ -179,11 +179,11 @@ class ParserLog(object):
 	def df_phase_freq(self,dataframe):
 		if "measurement" in dataframe.columns:
 			idx = dataframe.columns.get_loc("measurement")
-			phase_data = dataframe["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')
-			freq_data = dataframe["measurement"].str.extract(r'(\d+\.?\d*)$').astype(float)
+			phase_data = dataframe["measurement"].str.extract(r'^(.*?)(?=_[\d]+\.?\d*$)')[0]
+			freq_data = dataframe["measurement"].str.extract(r'(\d+\.?\d*)$')[0].astype(float)
 			dataframe.insert(idx + 1,"phase",phase_data)
 			dataframe.insert(idx + 2,"freq",freq_data)
-			dataframe["phase"] = dataframe["phase"].fillna(dataframe["measurement"])
+			dataframe["phase"] = phase_data.fillna(dataframe["measurement"])
 			
 		df_copy=dataframe.drop(columns=["measurement"]).copy()
 		#df_copy.to_csv("sdfasdf.csv",index=True)
