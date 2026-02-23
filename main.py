@@ -8,7 +8,7 @@ ctk.set_default_color_theme("blue")
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Audio For Beginner V1.0")
+        self.title("Audio For Beginner V1.1.1")
         self.geometry("1920x1080")
         self.update_idletasks()    # layout xong hết
         self.after(100, self.deiconify)

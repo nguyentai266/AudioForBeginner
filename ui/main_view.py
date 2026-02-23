@@ -37,9 +37,9 @@ class MainView(ctk.CTkFrame):
         MainTabView._segmented_button.configure(font=TITLE_FONT)
 
         homeTab=MainTabView.add("Home")
-        toolTab=MainTabView.add("Tool")
+        #toolTab=MainTabView.add("Tool")
         _HomeTabView(homeTab).pack(fill="both",expand=True)
-        _ToolTabView(toolTab).pack(fill="both",expand=True)
+        #_ToolTabView(toolTab).pack(fill="both",expand=True)
         
         
 
@@ -55,7 +55,7 @@ class _HomeTabView(ctk.CTkFrame):
         self.check_correlation=ctk.IntVar(value=0)
         self.check_grr=ctk.IntVar(value=0)
         self.check_masterchef_mode=ctk.IntVar(value=0)
-        
+        self.check_drawing_or_not=ctk.IntVar(value=1) 
         self.list_dut=[""]
         self.list_station=[""]
         self.list_phase=[""]
@@ -82,6 +82,9 @@ class _HomeTabView(ctk.CTkFrame):
 
         self.index_sorted=None
         self.can_refresh=False
+
+        
+
     def _content_view(self,master):
         search_frame=ctk.CTkFrame(master,fg_color=BG_COLOR)
         search_frame.pack(padx=0,pady=0,fill="both")
@@ -139,25 +142,38 @@ class _HomeTabView(ctk.CTkFrame):
         ctk.CTkCheckBox(self.sideBarFrame,text="File",font=LABLE_FONT,corner_radius=5,variable=self.check_from_file,command=lambda:self.check_logic_source(2)).grid(row=3,column=0,sticky="w")
 
         ctk.CTkLabel(self.sideBarFrame,text="Input",font=LABLE_FONT,fg_color=BG_COLOR).grid(row=4,column=0,padx=0,pady=0,sticky='w')
-        ctk.CTkLabel(self.sideBarFrame,text="Output",font=LABLE_FONT,fg_color=BG_COLOR).grid(row=6,column=0,padx=0,pady=0,sticky="w")
-        self.entry_input=ctk.CTkEntry(self.sideBarFrame,placeholder_text="csv log")
+        #input
+        self.entry_input=ctk.CTkEntry(self.sideBarFrame,placeholder_text="Input folder CSV log or CSV file")
         self.entry_input.grid(column=0,row=5,sticky="nesw",columnspan=2)
         self.entry_input.bind("<Return>", self.masterchef)
-        self.entry_output=ctk.CTkEntry(self.sideBarFrame,placeholder_text="output")
-        self.entry_output.grid(column=0,row=7,sticky='nesw',columnspan=2)
         self.btn_input_path=ctk.CTkButton(self.sideBarFrame,height=25,width=30,corner_radius=5, text="...",command=self.select_file_or_dir)
         self.btn_input_path.grid(column=2,row=5,padx=2,sticky="esn")
-        self.btn_output_path=ctk.CTkButton(self.sideBarFrame,height=25,width=30,corner_radius=5, text="...",command=lambda:self.select_dir(mode="output"))
-        self.btn_output_path.grid(column=2,row=7,padx=2,sticky="esn")
-        ctk.CTkLabel(self.sideBarFrame, text="Mode", font=CONTENT_FONT,fg_color=BG_COLOR,).grid(row=8,column=0,columnspan=3,sticky="w",pady=10)
         
-        ctk.CTkCheckBox(self.sideBarFrame,text="DUT Compare",font=LABLE_FONT,corner_radius=5,variable=self.check_dut_compare,command=lambda:self.check_logic_mode(1)).grid(row=9,column=0,sticky="w")
-        ctk.CTkCheckBox(self.sideBarFrame,text="Correlation",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=10,column=0,sticky="w")
-        ctk.CTkCheckBox(self.sideBarFrame,text="GRR",font=LABLE_FONT,corner_radius=5,variable=self.check_grr,command=lambda:self.check_logic_mode(3)).grid(row=11,column=0,sticky="w")
+        #1 mode
+        #2 drawing
+        ctk.CTkLabel(self.sideBarFrame,text="Drawing",font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=7,column=0,padx=0,pady=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="Yes/No",font=LABLE_FONT,corner_radius=5,variable=self.check_drawing_or_not).grid(row=8,column=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="By Station",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_station,command=lambda:self.check_logic_draw(1)).grid(row=9,column=0,sticky="w")
+        ctk.CTkCheckBox(self.sideBarFrame,text="By Device",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_dut,command=lambda:self.check_logic_draw(2)).grid(row=10,column=0,sticky="w")
 
-        ctk.CTkLabel(self.sideBarFrame,text="Graph By", font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=12,column=0,columnspan=3,sticky="w",pady=10)
-        ctk.CTkCheckBox(self.sideBarFrame,text="Station",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_station,command=lambda:self.check_logic_draw(1)).grid(row=13,column=0,sticky="w")
-        ctk.CTkCheckBox(self.sideBarFrame,text="DUT",font=LABLE_FONT,corner_radius=5,variable=self.check_draw_by_dut,command=lambda:self.check_logic_draw(2)).grid(row=14,column=0,sticky="w")
+        #3 device compare
+        ctk.CTkLabel(self.sideBarFrame, text="Mode", font=CONTENT_FONT,fg_color=BG_COLOR,).grid(row=11,column=0,columnspan=3,sticky="w",pady=0)
+
+        ctk.CTkCheckBox(self.sideBarFrame,text="Device Compare",font=LABLE_FONT,corner_radius=5,variable=self.check_dut_compare,command=lambda:self.check_logic_mode(1)).grid(row=12,column=0,sticky="w")
+        #4 by dut or by station
+        #ctk.CTkLabel(self.sideBarFrame,text="Graph By", font=CONTENT_FONT,fg_color=BG_COLOR).grid(row=10,column=0,columnspan=3,sticky="w",pady=10)
+        
+        #5 corelation
+        ctk.CTkCheckBox(self.sideBarFrame,text="Correlation",font=LABLE_FONT,corner_radius=5,variable=self.check_correlation,command=lambda:self.check_logic_mode(2)).grid(row=13,column=0,sticky="w")
+        #6 grr
+        ctk.CTkCheckBox(self.sideBarFrame,text="GRR",font=LABLE_FONT,corner_radius=5,variable=self.check_grr,command=lambda:self.check_logic_mode(3)).grid(row=14,column=0,sticky="w")
+        
+        
+        
+        
+        
+
+        
 
         self.btn_run=ctk.CTkButton(self.sideBarFrame,text="Run",font=CONTENT_FONT,fg_color="#63FF1D",text_color="#030352",command=lambda:self.run_analyze())
         self.btn_run.grid(row=15,column=0,columnspan=3,sticky="",pady=10)
@@ -187,6 +203,7 @@ class _HomeTabView(ctk.CTkFrame):
             self.df_data_raw.update(self.df_sorted)
             self.table.make_table(self.df_data_raw)
             self.logic_running_analysis()
+            messagebox.showinfo(title="Completed",message="Refresh OK")
         else:
             return
         #messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
@@ -262,21 +279,24 @@ class _HomeTabView(ctk.CTkFrame):
             self.grr()
 
     def dut_compare(self):
-        self.graph.show_graph(limit_df=self.df_limit_raw,
-                              data_df=self.df_data_raw,
-                              draw_by=self.draw_by,
-                              mode="dut_compare")
+        if self.check_drawing_or_not.get() == 1:
+            self.graph.show_graph(limit_df=self.df_limit_raw,
+                                data_df=self.df_data_raw,
+                                draw_by=self.draw_by,
+                                mode="dut_compare")
         self.table.make_table(self.df_data_raw)
     def correlation(self):
         self.avg_df,self.gap_df,self.gap_limit_df = correl.correlation(dataFrame_limit=self.df_limit_raw,
                                                                        dataFrame_raw=self.df_data_raw,
                                                                        limit_correl_config=config["limit_correl"])
-        self.graph.show_graph(limit_df=self.df_limit_raw,
-                              correl_limit_df=self.gap_limit_df,
-                              data_df=self.avg_df,
-                              correl_df=self.gap_df,
-                              draw_by="station_id",
-                              mode="correlation")
+        if self.check_drawing_or_not.get() == 1:
+            self.graph.show_graph(limit_df=self.df_limit_raw,
+                                correl_limit_df=self.gap_limit_df,
+                                data_df=self.avg_df,
+                                correl_df=self.gap_df,
+                                draw_by="station_id",
+                                mode="correlation")
+                                
         self.table.make_table(self.df_data_raw)
     def grr(self):
         messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
@@ -554,21 +574,24 @@ class _TableTab(ctk.CTkFrame):
 
 
         self.sheet.enable_bindings(('all'))
+       
         self.sheet.pack(expand=True, fill="both")    
     def make_table(self,dataFrame):
         self.df_data=dataFrame
         self.df_data=self.df_data.astype("str")
+        headers=self.df_data.columns.tolist()
         data_sheet=self.df_data.values.tolist()
-        self.sheet.headers(self.df_data.columns.tolist())
-        self.sheet.set_sheet_data(data_sheet)
+        full_sheet_data=[headers]+data_sheet
+        #self.sheet.headers(headers)
+        self.sheet.set_sheet_data(full_sheet_data)
+        self.sheet.set_all_column_widths()
         self.sheet.refresh()
 
     def get_data_from_sheet(self):
         headers=self.sheet.headers()
         data=self.sheet.get_sheet_data()
-        df_edit=pd.DataFrame(data=data,columns=headers)
+        df_edit=pd.DataFrame(data=data[1:],columns=data[0])
         return df_edit
     
-
-
+    
         
