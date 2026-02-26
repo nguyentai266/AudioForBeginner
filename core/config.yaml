@@ -19,7 +19,14 @@ select_phase:
   - mic_3_seal_chirp
   - hac_1_fr
   - hac_1_thdn
-
+sorting_mode: audio_full
+column_use:
+  - phase
+  - measurement
+  - low_limit
+  - high_limit
+  - low_limit2
+  - high_limit2
 plot_config:
   spk-1_fr: {min: 40, max: 120, step: 20}
   spk-2_fr: {min: 40,max: 120,step: 20}
@@ -35,7 +42,7 @@ plot_config:
   mic-2_fr: {min: -60, max: 0, step: 10}
   mic-3_fr: {min: -50, max: 0, step: 5}
 
-  mic-1_fr_norm: {min: -10, max: 10, step: 5}
+  mic-1_fr_norm: {min: -10, max: 15, step: 5}
   mic-2_fr_norm: {min: -10, max: 10, step: 5}
   mic-3_fr_norm: {min: -10, max: 10, step: 5}
 

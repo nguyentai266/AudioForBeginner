@@ -19,23 +19,34 @@ class DrawChart(object):
         self.config=load_yaml()
 
     def maker_graph(self,df_limit_by_phase,groups,phase,mode="defaut",title=""):
+        self.mode=mode
         self.phase=phase
         self.title=title
         self.min_freq=df_limit_by_phase["freq"].min()
+
         #self.max_freq=df_limit_by_phase["freq"].max()
         ##
-        df_limit_by_phase["low_limit"] = pd.to_numeric(df_limit_by_phase["low_limit"], errors="coerce")
-        df_limit_by_phase["high_limit"] = pd.to_numeric(df_limit_by_phase["high_limit"], errors="coerce")
-        df_limit_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
-        ##
-        self.freq_limit=df_limit_by_phase["freq"]
-        self.usl=df_limit_by_phase['high_limit']
-        self.lsl=df_limit_by_phase['low_limit']
-        self.freq_data=df_limit_by_phase["freq"]
-        self.max_freq=df_limit_by_phase["freq"].max()
+        
 
-        if mode == "default":
+        if self.mode == "default":
+            df_limit_by_phase["low_limit"] = pd.to_numeric(df_limit_by_phase["low_limit"], errors="coerce")
+            df_limit_by_phase["high_limit"] = pd.to_numeric(df_limit_by_phase["high_limit"], errors="coerce")
+            df_limit_by_phase["low_limit2"] = pd.to_numeric(df_limit_by_phase["low_limit2"], errors="coerce")
+            df_limit_by_phase["high_limit2"] = pd.to_numeric(df_limit_by_phase["high_limit2"], errors="coerce")
+            df_limit_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
+            ##
+            self.freq_limit=df_limit_by_phase["freq"]
+            self.usl=df_limit_by_phase['high_limit']
+            self.lsl=df_limit_by_phase['low_limit']
+            self.usl2=df_limit_by_phase['high_limit2']
+            self.lsl2=df_limit_by_phase['low_limit2']
+
+            self.freq_data=df_limit_by_phase["freq"]
+            self.max_freq=df_limit_by_phase["freq"].max()
             #config plot 
+            
+            
+
             self.y_min=self.config["plot_config"][phase]["min"]
             self.y_max=self.config["plot_config"][phase]["max"]
             self.y_step=self.config["plot_config"][phase]["step"]
@@ -46,7 +57,20 @@ class DrawChart(object):
                 self.y_extend=self.y_step/2
         
            
-        elif mode == "correlation":
+        elif self.mode == "correlation":
+            df_limit_by_phase["low_limit"] = pd.to_numeric(df_limit_by_phase["low_limit"], errors="coerce")
+            df_limit_by_phase["high_limit"] = pd.to_numeric(df_limit_by_phase["high_limit"], errors="coerce")
+            
+            df_limit_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
+            ##
+            self.freq_limit=df_limit_by_phase["freq"]
+            self.usl=df_limit_by_phase['high_limit']
+            self.lsl=df_limit_by_phase['low_limit']
+            
+
+            self.freq_data=df_limit_by_phase["freq"]
+            self.max_freq=df_limit_by_phase["freq"].max()
+
             self.y_extend=0
             self.y_min=self.config["plot_config_correlation"][phase]["min"]
             self.y_max=self.config["plot_config_correlation"][phase]["max"]
@@ -75,11 +99,17 @@ class DrawChart(object):
         ax.set_yticks(np.arange(self.y_min, self.y_max + self.y_extend, self.y_step))
 
         fig.suptitle(f"{self.phase} {self.title}")
-
-        ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5,label="limit")
-        ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5)
+        if self.mode == "default":
+            ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5,label="limit")
+            ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5)
+            ax.plot(self.freq_limit, self.usl2, color="red", linewidth=1.2,linestyle="--")
+            ax.plot(self.freq_limit, self.lsl2, color="red", linewidth=1.2,linestyle="--")
+        elif self.mode == "correlation":
+            ax.plot(self.freq_limit, self.usl, color="red", linewidth=1.5,label="limit")
+            ax.plot(self.freq_limit, self.lsl, color="red", linewidth=1.5)
 
         color_cycle = cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
+        
         color_map = {}   # key -> color
 
         for key, group in groups:

@@ -19,7 +19,7 @@ class ParserLog(object):
 		self.select_phases=self.config["select_phase"]
 
 	def load_limit(self,filepath,mode=""):
-		col_use=["phase","measurement","low_limit","high_limit"]
+		col_use=self.config["column_use"]
 		df=pd.read_csv(filepath,header=1,usecols=col_use)
 		if mode=="audio_sort" or mode == "audio_full" or mode =="":
 			sorted_df=df[df["phase"].isin(self.select_phases)].copy()
@@ -89,7 +89,9 @@ class ParserLog(object):
 			results = list(executor.map(lambda f:self.__process_data(f,mode), list_file))
 	
 		li = [df for df in results if df is not None]
-		if li: df_summary = pd.concat(li, axis=0, ignore_index=True)
+		if li: 
+			li_cleaned = [df.loc[:, ~df.columns.duplicated()].copy() for df in li]
+			df_summary = pd.concat(li_cleaned, axis=0, ignore_index=True)
 		else:  df_summary = pd.DataFrame()
 		return df_limit,df_summary		
 	

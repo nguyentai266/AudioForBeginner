@@ -1,6 +1,5 @@
 import os
 import re
-import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -8,6 +7,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -239,7 +239,7 @@ class _HomeTabView(ctk.CTkFrame):
             messagebox.showinfo(title="Notice",message="Please input data log")
         if path != "":     
             if Path(path).is_dir():
-                self.df_limit_raw,self.df_data_raw=parser.summary_data(path,mode="audio_full")
+                self.df_limit_raw,self.df_data_raw=parser.summary_data(path,mode=config["sorting_mode"])
                 self.df_limit_raw.to_csv("limit.csv",index=False)
                 
             if Path(path).is_file():
@@ -265,14 +265,12 @@ class _HomeTabView(ctk.CTkFrame):
 
     def logic_running_analysis(self):
         if self.check_dut_compare.get() == 1 :
-            logger.info("Run mode compare")
-            t=threading.Thread(target=self.dut_compare(),args="Dut compare")
-            t.start()
+            logger.info("Run mode Compare")
+            self.dut_compare()
             
         if self.check_correlation.get() == 1:
-            logger.info("Run mode correlation")
-            t=threading.Thread(target=self.correlation(),args="Correlation")
-            t.start()
+            logger.info("Run mode Correlation")
+            self.correlation()
             
         if self.check_grr.get() == 1:
             logger.info("Run mode GRR")
@@ -452,14 +450,18 @@ class _GraphTab(ctk.CTkFrame):
         self.show_img()
 
     def show_img(self):
-        fig, ax = plt.subplots()
-        img = mpimg.imread("core/image.png")
-        ax.imshow(img)
-        ax.axis("off")
-        self.pack_grarh(fig=fig)
+        
+        if os.path.exists("core/image.png"):
+            fig, ax = plt.subplots()
+            img = mpimg.imread("core/image.png")
+            ax.imshow(img)
+            ax.axis("off")
+            
+            self.pack_grarh(fig=fig)
+        else: return
       
     def show_graph(self, limit_df, data_df,draw_by,correl_limit_df=None,correl_df=None,mode="dut_compare"):
-        self.clear_inner()
+        
         self.draw_by=draw_by
         self.limit_df=limit_df
         self.data_df=data_df
@@ -478,12 +480,14 @@ class _GraphTab(ctk.CTkFrame):
                 df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
                 groups_data=parser.group_data(df_phase_filter,groupBy=self.draw_by)
+                
                 fig = plotter.maker_graph(
                     df_limit_by_phase=limit_df_by_phase,
                     groups=groups_data,  # gui vao dataframe dang long
                     phase=phase,
                     mode="default")
                 self.figures.append(fig)
+            logger.info("draw finish")
         elif self.mode == "correlation":
             self.draw_by = "station_id"
             # Lấy danh sách phase từ bảng limit correlation
@@ -492,6 +496,7 @@ class _GraphTab(ctk.CTkFrame):
                 df_phase_filter=self.data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
                 limit_df_by_phase=self.limit_df[self.limit_df["phase"]==phase].copy()
                 groups_data=parser.group_data(df_phase_filter,groupBy=self.draw_by)
+                
                 fig = plotter.maker_graph(
                     df_limit_by_phase=limit_df_by_phase,
                     groups=groups_data,  # gui vao dataframe dang long
@@ -501,6 +506,7 @@ class _GraphTab(ctk.CTkFrame):
                 self.figures.append(fig)
                 
                 df_phase_correl_filter=self.correl_data_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|{re.escape(self.draw_by)})$").copy()
+               
                 df_phase_correl_limit=self.correl_limit[self.correl_limit["phase"]==phase].copy()
                 groups_data_correl=parser.group_data(df_phase_correl_filter,groupBy=self.draw_by)
                 fig_correl = plotter.maker_graph(
@@ -509,35 +515,39 @@ class _GraphTab(ctk.CTkFrame):
                     phase=phase,
                     mode="correlation")
                 self.figures.append(fig_correl)
-
-        self.after(0, lambda: self._render_figures(self.figures))
+            logger.info("draw finish")
+        self._render_figures(self.figures)
+        #self.after(0, lambda: self._render_figures(self.figures))
 
 
     def _render_figures(self, figures):
+        self.clear_inner()
         for fig in figures:
             if fig == figures[-1]:
-                logger.info("Completed Analyze")
                 self.pack_grarh(fig)
+                logger.info("Completed Analyze")
             else:
                 self.pack_grarh(fig)
 
 
         # ---------------------------
-    def pack_grarh(self,fig):
+    def pack_grarh(self,fig,height=600,width=800):
         
-        frame = ctk.CTkFrame(self.inner, height=600,width=800)
+        frame = ctk.CTkFrame(self.inner, height,width)
         frame.pack(fill="both",expand=True,pady=10)
-        frame.columnconfigure(0,weight=1)
-        frame.rowconfigure(0,weight=1)
+        
         frame.pack_propagate(False)
         canvas = FigureCanvasTkAgg(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().config(width=700)
+        canvas.draw_idle()
+        #canvas.get_tk_widget().config(width=700)
         canvas.get_tk_widget().grid(column=0,row=0,sticky="nesw")
+        frame.columnconfigure(0,weight=1)
+        frame.rowconfigure(0,weight=1)
         #pack(fill="both", expand=True,anchor="center")
     def clear_inner(self):
         for widget in self.inner.winfo_children():
-            widget.destroy()
+            if isinstance(widget,ctk.CTkFrame):
+                widget.destroy()
         self.figures=[]
     # ---------------------------
     def _update_scrollregion(self, event):
