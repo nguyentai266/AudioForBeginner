@@ -277,25 +277,25 @@ class _HomeTabView(ctk.CTkFrame):
             self.grr()
 
     def dut_compare(self):
+        self.table.make_table(self.df_data_raw)
         if self.check_drawing_or_not.get() == 1:
             self.graph.show_graph(limit_df=self.df_limit_raw,
                                 data_df=self.df_data_raw,
                                 draw_by=self.draw_by,
                                 mode="dut_compare")
-        self.table.make_table(self.df_data_raw)
+        
     def correlation(self):
-        self.avg_df,self.gap_df,self.gap_limit_df = correl.correlation(dataFrame_limit=self.df_limit_raw,
-                                                                       dataFrame_raw=self.df_data_raw,
-                                                                       limit_correl_config=config["limit_correl"])
+        self.avg_df,self.gap_df = correl.correlation(dataFrame_limit=self.df_limit_raw,dataFrame_raw=self.df_data_raw)
+        self.table.make_table(self.df_data_raw)
         if self.check_drawing_or_not.get() == 1:
             self.graph.show_graph(limit_df=self.df_limit_raw,
-                                correl_limit_df=self.gap_limit_df,
+                                correl_limit_df=self.df_limit_raw,
                                 data_df=self.avg_df,
                                 correl_df=self.gap_df,
                                 draw_by="station_id",
                                 mode="correlation")
                                 
-        self.table.make_table(self.df_data_raw)
+        
     def grr(self):
         messagebox.showwarning(title="Warning",message="Chưa phát triển, hãy dùng những cái có sẵn")
 
@@ -461,7 +461,7 @@ class _GraphTab(ctk.CTkFrame):
         else: return
       
     def show_graph(self, limit_df, data_df,draw_by,correl_limit_df=None,correl_df=None,mode="dut_compare"):
-        
+        self.clear_inner()
         self.draw_by=draw_by
         self.limit_df=limit_df
         self.data_df=data_df
@@ -469,9 +469,9 @@ class _GraphTab(ctk.CTkFrame):
         self.correl_data_df=correl_df
         self.mode=mode
 
-        self._process_and_plot()
+        #self._process_and_plot()
         #logger.info("Completed Analysis")
-    
+        self._process_and_plot()
     def _process_and_plot(self):
         
         if self.mode == "dut_compare":
@@ -515,13 +515,13 @@ class _GraphTab(ctk.CTkFrame):
                     phase=phase,
                     mode="correlation")
                 self.figures.append(fig_correl)
-            logger.info("draw finish")
+            logger.info("Draw Finish")
         self._render_figures(self.figures)
         #self.after(0, lambda: self._render_figures(self.figures))
 
 
     def _render_figures(self, figures):
-        self.clear_inner()
+        
         for fig in figures:
             if fig == figures[-1]:
                 self.pack_grarh(fig)
@@ -541,6 +541,7 @@ class _GraphTab(ctk.CTkFrame):
         canvas.draw_idle()
         #canvas.get_tk_widget().config(width=700)
         canvas.get_tk_widget().grid(column=0,row=0,sticky="nesw")
+        
         frame.columnconfigure(0,weight=1)
         frame.rowconfigure(0,weight=1)
         #pack(fill="both", expand=True,anchor="center")
@@ -548,7 +549,8 @@ class _GraphTab(ctk.CTkFrame):
         for widget in self.inner.winfo_children():
             if isinstance(widget,ctk.CTkFrame):
                 widget.destroy()
-        self.figures=[]
+        self.figures.clear()
+        
     # ---------------------------
     def _update_scrollregion(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -567,8 +569,9 @@ class _GraphTab(ctk.CTkFrame):
                 for fig in self.figures:
                     pdf.savefig(fig,bbox_inches='tight')
             logger.info("Export PDF completed")
+            
     
-        
+    
 
     
 
