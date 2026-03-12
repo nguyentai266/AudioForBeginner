@@ -34,8 +34,8 @@ class AudioCorrelation:
                         break
         
         if not cols_fr:
-            print("Cảnh báo: Không tìm thấy cột tần số khớp định dạng.")
-            return None, None, None
+            
+            return None, None
 
         df_numeric = self.df_raw[cols_fr].apply(pd.to_numeric, errors="coerce")
         station_ids = self.df_raw['station_id']
@@ -50,10 +50,7 @@ class AudioCorrelation:
         gap_vals = avg_group_df[cols_fr].sub(avg_total_series, axis=1)
         gap_group_df = pd.concat([avg_group_df[['station_id']], gap_vals], axis=1).copy()
 
-        # 3. Tạo df_limit_correl dạng dọc với logic NA ngoài dải chốt
-        '''df_limit_correl = None
-        if limit_correl_config is not None:
-            df_limit_correl = self.get_step_limit_df(limit_correl_config, cols_fr)'''
+       
 
         return avg_group_df, gap_group_df
 

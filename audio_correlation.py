@@ -28,7 +28,7 @@ if __name__ =="__main__":
     path="input_source/"
     try:
         df_limit,df_data=parser.summary_data(path,mode="audio_sort")
-        df_avg,correl_df,limit_correl=correlation.correlation(dataFrame_limit=df_limit,dataFrame_raw=df_data,limit_correl_config=config["limit_correl"])
+        df_avg,correl_df=correlation.correlation(dataFrame_limit=df_limit,dataFrame_raw=df_data)
         figures=[]
         phases = df_limit["phase"].unique()
         for phase in phases:
@@ -44,10 +44,10 @@ if __name__ =="__main__":
             figures.append(fig)
             
             df_phase_correl_filter=correl_df.filter(regex=rf"^({re.escape(phase)}_\d+(\.\d+)?|station_id)$").copy()
-            df_phase_correl_limit=limit_correl[limit_correl["phase"]==phase].copy()
+            #df_phase_correl_limit=limit_correl[limit_correl["phase"]==phase].copy()
             groups_data_correl=parser.group_data(df_phase_correl_filter,groupBy="station_id")
             fig_correl = plotter.maker_graph(
-                df_limit_by_phase=df_phase_correl_limit,
+                df_limit_by_phase=limit_df_by_phase,
                 groups=groups_data_correl,
                 phase=phase,
                 mode="correlation")

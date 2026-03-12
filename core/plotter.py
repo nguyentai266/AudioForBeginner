@@ -23,9 +23,8 @@ class DrawChart(object):
         self.phase=phase
         self.title=title
         self.min_freq=df_limit_by_phase["freq"].min()
-
         self.max_freq=df_limit_by_phase["freq"].max()
-        ##
+        
         
 
         if self.mode == "default":
@@ -41,11 +40,6 @@ class DrawChart(object):
             self.usl2=df_limit_by_phase['high_limit2']
             self.lsl2=df_limit_by_phase['low_limit2']
 
-            #self.freq_data=df_limit_by_phase["freq"]
-            #self.max_freq=df_limit_by_phase["freq"].max()
-            #config plot 
-            
-            
 
             self.y_min=self.config["plot_config"][phase]["min"]
             self.y_max=self.config["plot_config"][phase]["max"]
@@ -58,22 +52,10 @@ class DrawChart(object):
         
            
         elif self.mode == "correlation":
-            '''df_limit_by_phase["low_limit"] = pd.to_numeric(df_limit_by_phase["low_limit"], errors="coerce")
-            df_limit_by_phase["high_limit"] = pd.to_numeric(df_limit_by_phase["high_limit"], errors="coerce")
-            
-            df_limit_by_phase.replace([np.inf, -np.inf], np.nan, inplace=True)
-            
-            self.freq_limit=df_limit_by_phase["freq"]
-            self.usl=df_limit_by_phase['high_limit']
-            self.lsl=df_limit_by_phase['low_limit']
-            '''
 
             self.freq_point=self.config['limit_correl'][phase]['freq']
             self.usl_point=self.config['limit_correl'][phase]['usl']
             self.lsl_point=self.config['limit_correl'][phase]['lsl']
-
-            #self.freq_data=df_limit_by_phase["freq"]
-            #self.max_freq=df_limit_by_phase["freq"].max()
 
             self.y_extend=0
             self.y_min=self.config["plot_config_correlation"][phase]["min"]
